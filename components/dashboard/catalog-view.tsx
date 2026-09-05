@@ -8,7 +8,7 @@ import {
   XMarkIcon,
   TagIcon,
   MagnifyingGlassIcon,
-  DocumentPlusIcon,
+  DocumentTextIcon,
   ArrowPathIcon,
 } from "@heroicons/react/24/outline";
 
@@ -432,7 +432,7 @@ export default function CatalogView({ onSelectItemForInvoice }: CatalogViewProps
                             className="flex items-center gap-1 py-1 px-2 rounded-lg bg-[#262626] hover:bg-[#303030] text-[#D4AF37] text-xs font-medium transition-colors cursor-pointer"
                             title="Créer une facture avec cet article"
                           >
-                            <DocumentPlusIcon className="w-3.5 h-3.5" />
+                            <DocumentTextIcon className="w-3.5 h-3.5" />
                             <span className="hidden sm:inline">Facturer</span>
                           </button>
                         )}
