@@ -6,27 +6,30 @@ export const isSupabaseConfigured = Boolean(
 
 export const supabase = {
   auth: {
-    signInWithOtp: async ({ email }: { email: string; options?: any }) => ({
+    signInWithOtp: async ({ email, options }: { email: string; options?: any }) => ({
       data: { user: { email } },
       error: null,
     }),
-    verifyOtp: async ({ email, token }: { email: string; token: string; type?: string }) => {
+    verifyOtp: async ({ email, token, type }: { email: string; token: string; type?: string }) => {
       if (token === "000000") return { error: new Error("Code incorrect, réessayez.") };
       return { data: { user: { email } }, error: null };
     },
-    signInWithPassword: async ({ email }: { email: string; password: string }) => ({
+    signInWithPassword: async ({ email, password }: { email: string; password: string }) => ({
       data: { user: { email } },
       error: null,
     }),
-    signUp: async ({ email }: { email: string; password?: string; options?: any }) => ({
+    signUp: async ({ email, password, options }: { email: string; password?: string; options?: any }) => ({
       data: { user: { email } },
       error: null,
     }),
-    resetPasswordForEmail: async (email: string) => ({
+    resetPasswordForEmail: async (
+      email: string,
+      options?: { redirectTo?: string; [key: string]: any }
+    ) => ({
       data: {},
       error: null,
     }),
-    signInWithOAuth: async () => ({
+    signInWithOAuth: async (options?: any) => ({
       data: {},
       error: null,
     }),
