@@ -8,7 +8,7 @@ import {
   ShareIcon,
   XMarkIcon,
   BanknotesIcon,
-  BookmarkIcon,
+  BookmarkSquareIcon,
   SparklesIcon,
   ArrowPathIcon,
   DocumentTextIcon,
@@ -353,7 +353,7 @@ export default function DocumentEditor({
               className={`py-1.5 px-3 rounded-lg text-xs font-medium border transition-colors cursor-pointer flex items-center gap-1.5 ${
                 selectedTemplateId === "blank"
                   ? "bg-[#262626] border-[#D4AF37] text-[#D4AF37]"
-                  : "bg-[#0C0C0C] border-[#262626] text-neutral-300 hover:text-white"
+                  : "bg-[#000000] border-[#262626] text-neutral-300 hover:text-white"
               }`}
               title="Créer un document sans aucun modèle imposé"
             >
@@ -367,7 +367,7 @@ export default function DocumentEditor({
               className="py-1.5 px-3 rounded-lg bg-[#262626] hover:bg-[#333] border border-[#333] text-xs font-medium text-[#D4AF37] transition-colors cursor-pointer flex items-center gap-1.5"
               title="Enregistrer la configuration actuelle comme modèle d'atelier réutilisable"
             >
-              <BookmarkIcon className="w-3.5 h-3.5" />
+              <BookmarkSquareIcon className="w-3.5 h-3.5" />
               <span>⭐ Sauvegarder comme mon modèle</span>
             </button>
           </div>
@@ -382,7 +382,7 @@ export default function DocumentEditor({
               className={`p-3 rounded-xl border transition-all cursor-pointer text-left flex flex-col justify-between ${
                 selectedTemplateId === tmpl.id
                   ? "bg-[#202020] border-[#D4AF37] ring-1 ring-[#D4AF37]/50"
-                  : "bg-[#0C0C0C] border-[#262626] hover:border-[#383838]"
+                  : "bg-[#000000] border-[#262626] hover:border-[#383838]"
               }`}
             >
               <div>
@@ -416,7 +416,7 @@ export default function DocumentEditor({
                   className={`flex items-center gap-2 py-1.5 px-3 rounded-xl border text-xs cursor-pointer transition-colors ${
                     selectedTemplateId === `custom_${custom.id}`
                       ? "bg-[#262626] border-[#D4AF37] text-white"
-                      : "bg-[#0C0C0C] border-[#262626] text-neutral-300 hover:text-white"
+                      : "bg-[#000000] border-[#262626] text-neutral-300 hover:text-white"
                   }`}
                 >
                   <span className="font-medium">{custom.name}</span>
@@ -484,7 +484,7 @@ export default function DocumentEditor({
               placeholder="Ex: Mme Tossou / Société Générale Bénin"
               value={clientName}
               onChange={(e) => setClientName(e.target.value)}
-              className="w-full px-3.5 py-2.5 rounded-xl bg-[#0C0C0C] border border-[#262626] text-sm text-white placeholder-neutral-500 focus:outline-none focus:border-[#D4AF37] transition-colors"
+              className="w-full px-3.5 py-2.5 rounded-xl bg-[#000000] border border-[#262626] text-sm text-white placeholder-neutral-500 focus:outline-none focus:border-[#D4AF37] transition-colors"
             />
           </div>
 
@@ -497,7 +497,7 @@ export default function DocumentEditor({
               placeholder="+229 97 00 00 00 / +225 07..."
               value={clientPhone}
               onChange={(e) => setClientPhone(e.target.value)}
-              className="w-full px-3.5 py-2.5 rounded-xl bg-[#0C0C0C] border border-[#262626] text-sm text-white placeholder-neutral-500 focus:outline-none focus:border-[#D4AF37] transition-colors"
+              className="w-full px-3.5 py-2.5 rounded-xl bg-[#000000] border border-[#262626] text-sm text-white placeholder-neutral-500 focus:outline-none focus:border-[#D4AF37] transition-colors"
             />
           </div>
         </div>
@@ -510,7 +510,7 @@ export default function DocumentEditor({
             <select
               value={validity}
               onChange={(e) => setValidity(e.target.value)}
-              className="w-full px-3.5 py-2.5 rounded-xl bg-[#0C0C0C] border border-[#262626] text-sm text-white focus:outline-none focus:border-[#D4AF37] transition-colors"
+              className="w-full px-3.5 py-2.5 rounded-xl bg-[#000000] border border-[#262626] text-sm text-white focus:outline-none focus:border-[#D4AF37] transition-colors"
             >
               <option value="Paiement à réception">Paiement à réception (Comptant)</option>
               <option value="Valable 15 jours">Valable 15 jours</option>
@@ -527,7 +527,7 @@ export default function DocumentEditor({
               <select
                 value={paymentProvider}
                 onChange={(e: any) => setPaymentProvider(e.target.value)}
-                className="w-full px-2.5 py-2.5 rounded-xl bg-[#0C0C0C] border border-[#262626] text-sm text-white focus:outline-none focus:border-[#D4AF37] transition-colors"
+                className="w-full px-2.5 py-2.5 rounded-xl bg-[#000000] border border-[#262626] text-sm text-white focus:outline-none focus:border-[#D4AF37] transition-colors"
               >
                 <option value="Wave">Wave</option>
                 <option value="MTN MoMo">MTN MoMo</option>
@@ -541,7 +541,7 @@ export default function DocumentEditor({
                 value={paymentPhone}
                 onChange={(e) => setPaymentPhone(e.target.value)}
                 placeholder="+229..."
-                className="w-full px-2.5 py-2.5 rounded-xl bg-[#0C0C0C] border border-[#262626] text-xs text-white placeholder-neutral-500 focus:outline-none focus:border-[#D4AF37] transition-colors"
+                className="w-full px-2.5 py-2.5 rounded-xl bg-[#000000] border border-[#262626] text-xs text-white placeholder-neutral-500 focus:outline-none focus:border-[#D4AF37] transition-colors"
               />
             </div>
           </div>
@@ -556,7 +556,7 @@ export default function DocumentEditor({
             type="text"
             value={legalMention}
             onChange={(e) => setLegalMention(e.target.value)}
-            className="w-full px-3.5 py-2 rounded-xl bg-[#0C0C0C] border border-[#262626] text-xs text-neutral-300 placeholder-neutral-500 focus:outline-none focus:border-[#D4AF37] transition-colors"
+            className="w-full px-3.5 py-2 rounded-xl bg-[#000000] border border-[#262626] text-xs text-neutral-300 placeholder-neutral-500 focus:outline-none focus:border-[#D4AF37] transition-colors"
           />
         </div>
       </div>
@@ -594,7 +594,7 @@ export default function DocumentEditor({
             <button
               type="button"
               onClick={() => setIsAddDialogOpen(true)}
-              className="py-1.5 px-3.5 rounded-lg bg-[#D4AF37] text-[#0C0C0C] text-xs font-semibold cursor-pointer"
+              className="py-1.5 px-3.5 rounded-lg bg-[#D4AF37] text-[#000000] text-xs font-semibold cursor-pointer"
             >
               + Ajouter la première ligne
             </button>
@@ -604,7 +604,7 @@ export default function DocumentEditor({
             {items.map((item) => (
               <div
                 key={item.id}
-                className="flex items-center justify-between gap-3 p-3 rounded-xl bg-[#0C0C0C] border border-[#262626]"
+                className="flex items-center justify-between gap-3 p-3 rounded-xl bg-[#000000] border border-[#262626]"
               >
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-white truncate">{item.label}</p>
@@ -673,7 +673,7 @@ export default function DocumentEditor({
                   max={total}
                   value={depositAmount}
                   onChange={(e) => setDepositAmount(Number(e.target.value) || 0)}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#0C0C0C] border border-[#262626] text-sm text-white font-mono focus:outline-none focus:border-[#D4AF37] transition-colors"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#000000] border border-[#262626] text-sm text-white font-mono focus:outline-none focus:border-[#D4AF37] transition-colors"
                 />
               </div>
 
@@ -691,7 +691,7 @@ export default function DocumentEditor({
                       key={btn.percent}
                       type="button"
                       onClick={() => handleSetDepositPercent(btn.percent)}
-                      className="flex-1 py-2 px-2 rounded-xl bg-[#0C0C0C] border border-[#262626] hover:border-[#D4AF37] text-xs font-medium text-neutral-300 hover:text-[#D4AF37] transition-colors cursor-pointer"
+                      className="flex-1 py-2 px-2 rounded-xl bg-[#000000] border border-[#262626] hover:border-[#D4AF37] text-xs font-medium text-neutral-300 hover:text-[#D4AF37] transition-colors cursor-pointer"
                     >
                       {btn.label}
                     </button>
@@ -701,7 +701,7 @@ export default function DocumentEditor({
             </div>
 
             {/* Financial Summary Box */}
-            <div className="grid grid-cols-3 gap-3 p-3.5 rounded-xl bg-[#0C0C0C] border border-[#262626] text-center">
+            <div className="grid grid-cols-3 gap-3 p-3.5 rounded-xl bg-[#000000] border border-[#262626] text-center">
               <div>
                 <span className="text-[11px] text-neutral-400 block mb-0.5">Montant Total</span>
                 <span className="text-sm font-semibold text-white font-mono tabular-nums">
@@ -759,7 +759,7 @@ export default function DocumentEditor({
       </div>
 
       {/* Sticky Bottom Action Bar */}
-      <div className="fixed bottom-0 left-0 right-0 bg-[#0C0C0C]/95 border-t border-[#262626] p-4 z-40">
+      <div className="fixed bottom-0 left-0 right-0 bg-[#000000]/95 border-t border-[#262626] p-4 z-40">
         <div className="max-w-4xl mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-baseline gap-4">
             <div>
@@ -786,7 +786,7 @@ export default function DocumentEditor({
             type="button"
             onClick={handleGenerateAndShare}
             disabled={isGenerating}
-            className="w-full sm:w-auto flex items-center justify-center gap-2 py-3 px-6 rounded-xl bg-[#D4AF37] hover:bg-[#e2b170] text-[#0C0C0C] text-sm font-semibold transition-colors disabled:opacity-50 cursor-pointer"
+            className="w-full sm:w-auto flex items-center justify-center gap-2 py-3 px-6 rounded-xl bg-[#D4AF37] hover:bg-[#e2b170] text-[#000000] text-sm font-semibold transition-colors disabled:opacity-50 cursor-pointer"
           >
             <ShareIcon className="w-4 h-4" />
             <span>
@@ -798,7 +798,7 @@ export default function DocumentEditor({
 
       {/* Modal: Save Current Document as Custom Template */}
       {isSaveModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4">
           <div className="w-full max-w-md bg-[#171717] border border-[#262626] rounded-2xl p-6 space-y-4">
             <div className="flex items-center justify-between border-b border-[#262626] pb-3">
               <h3 style={{ fontFamily: "'DM Serif Display', serif" }} className="text-lg text-white">
@@ -826,7 +826,7 @@ export default function DocumentEditor({
                 placeholder="Ex: Mon devis standard Meuble TV / Ma robe mariage"
                 value={newTemplateName}
                 onChange={(e) => setNewTemplateName(e.target.value)}
-                className="w-full px-3.5 py-2.5 rounded-xl bg-[#0C0C0C] border border-[#262626] text-sm text-white placeholder-neutral-500 focus:outline-none focus:border-[#D4AF37]"
+                className="w-full px-3.5 py-2.5 rounded-xl bg-[#000000] border border-[#262626] text-sm text-white placeholder-neutral-500 focus:outline-none focus:border-[#D4AF37]"
               />
             </div>
 
@@ -841,7 +841,7 @@ export default function DocumentEditor({
               <button
                 type="button"
                 onClick={handleSaveCurrentAsTemplate}
-                className="flex-1 py-2.5 rounded-xl bg-[#D4AF37] text-[#0C0C0C] text-xs font-semibold hover:bg-[#e2b170] transition-colors"
+                className="flex-1 py-2.5 rounded-xl bg-[#D4AF37] text-[#000000] text-xs font-semibold hover:bg-[#e2b170] transition-colors"
               >
                 Enregistrer le modèle
               </button>
@@ -875,7 +875,7 @@ export default function DocumentEditor({
                   placeholder="Ex: Confection porte bois rouge / Réparation châssis"
                   value={manualLabel}
                   onChange={(e) => setManualLabel(e.target.value)}
-                  className="w-full px-3.5 py-2 rounded-xl bg-[#0C0C0C] border border-[#262626] text-sm text-white placeholder-neutral-500 focus:outline-none focus:border-[#D4AF37]"
+                  className="w-full px-3.5 py-2 rounded-xl bg-[#000000] border border-[#262626] text-sm text-white placeholder-neutral-500 focus:outline-none focus:border-[#D4AF37]"
                 />
               </div>
 
@@ -887,7 +887,7 @@ export default function DocumentEditor({
                     min={1}
                     value={manualQty}
                     onChange={(e) => setManualQty(Number(e.target.value) || 1)}
-                    className="w-full px-3.5 py-2 rounded-xl bg-[#0C0C0C] border border-[#262626] text-sm text-white font-mono"
+                    className="w-full px-3.5 py-2 rounded-xl bg-[#000000] border border-[#262626] text-sm text-white font-mono"
                   />
                 </div>
 
@@ -899,7 +899,7 @@ export default function DocumentEditor({
                     step={500}
                     value={manualPrice}
                     onChange={(e) => setManualPrice(Number(e.target.value) || 0)}
-                    className="w-full px-3.5 py-2 rounded-xl bg-[#0C0C0C] border border-[#262626] text-sm text-white font-mono"
+                    className="w-full px-3.5 py-2 rounded-xl bg-[#000000] border border-[#262626] text-sm text-white font-mono"
                   />
                 </div>
               </div>
@@ -916,7 +916,7 @@ export default function DocumentEditor({
               <button
                 type="button"
                 onClick={handleAddManualItem}
-                className="py-2 px-4 rounded-xl bg-[#D4AF37] text-[#0C0C0C] text-xs font-semibold hover:bg-[#e2b170]"
+                className="py-2 px-4 rounded-xl bg-[#D4AF37] text-[#000000] text-xs font-semibold hover:bg-[#e2b170]"
               >
                 Ajouter au document
               </button>

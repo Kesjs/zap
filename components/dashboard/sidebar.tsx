@@ -12,18 +12,18 @@ import {
   ArrowLeftOnRectangleIcon,
   SparklesIcon,
   XMarkIcon,
-  ChevronLeftIcon,
-  ChevronRightIcon,
+  BeakerIcon,
 } from "@heroicons/react/24/outline";
 import { useSidebar } from "./sidebar-context";
 
-export type DashboardView = "registry" | "new" | "catalog" | "settings";
+export type DashboardView = "registry" | "new" | "catalog" | "settings" | "pdf-preview";
 
 interface SidebarProps {
   currentView: DashboardView;
   onViewChange: (view: DashboardView) => void;
   documentCount?: number;
   maxDocuments?: number;
+  onLogout?: () => void;
 }
 
 export default function Sidebar({
@@ -31,8 +31,9 @@ export default function Sidebar({
   onViewChange,
   documentCount = 3,
   maxDocuments = 8,
+  onLogout,
 }: SidebarProps) {
-  const { isCollapsed, toggleSidebar, isOpenMobile, closeMobile } = useSidebar();
+  const { isCollapsed, isOpenMobile, closeMobile } = useSidebar();
 
   const navItems = [
     {
@@ -61,6 +62,12 @@ export default function Sidebar({
       shortLabel: "Paramètres",
       icon: Cog6ToothIcon,
     },
+    {
+      id: "pdf-preview" as DashboardView,
+      label: "Aperçu PDF (test)",
+      shortLabel: "Aperçu PDF",
+      icon: BeakerIcon,
+    },
   ];
 
   const quotaPercent = Math.min(100, Math.round((documentCount / maxDocuments) * 100));
@@ -76,7 +83,7 @@ export default function Sidebar({
           1. DESKTOP SIDEBAR : COLLAPSIBLE (240px <-> 68px)
       ────────────────────────────────────────────────────────────────────────── */}
       <aside
-        className={`hidden md:flex flex-col justify-between fixed top-0 bottom-0 left-0 z-40 bg-[#121212] border-r border-[#262626] transition-all duration-300 ease-in-out select-none ${
+        className={`hidden md:flex flex-col justify-between fixed top-0 bottom-0 left-0 z-40 bg-[#000000] border-r border-[#262626] transition-all duration-300 ease-in-out select-none ${
           isCollapsed ? "w-[68px]" : "w-[240px]"
         }`}
       >
@@ -84,10 +91,11 @@ export default function Sidebar({
         <div>
           <div
             className={`h-16 flex items-center border-b border-[#262626] transition-all duration-300 ${
-              isCollapsed ? "justify-center px-2" : "justify-between px-4"
+              isCollapsed ? "justify-center px-2" : "px-4"
             }`}
           >
-            {/* Logo Link to Home */}
+            {/* Logo Link to Home — le bouton collapse/expand vit désormais uniquement
+                dans le header (un seul déclencheur pour éviter le doublon). */}
             <Link
               href="/"
               className="flex items-center gap-2.5 no-underline group overflow-hidden"
@@ -122,33 +130,7 @@ export default function Sidebar({
                 </div>
               )}
             </Link>
-
-            {/* Collapse / Expand Toggle Button (Inspire de Locative) */}
-            {!isCollapsed && (
-              <button
-                type="button"
-                onClick={toggleSidebar}
-                className="w-7 h-7 rounded-lg border border-[#262626] bg-[#171717] hover:bg-[#202020] text-neutral-400 hover:text-white flex items-center justify-center transition-colors cursor-pointer"
-                title="Rétrécir la barre latérale"
-              >
-                <ChevronLeftIcon className="w-4 h-4" />
-              </button>
-            )}
           </div>
-
-          {/* Expand button when collapsed */}
-          {isCollapsed && (
-            <div className="flex justify-center pt-2 pb-1 border-b border-[#1f1f1f]">
-              <button
-                type="button"
-                onClick={toggleSidebar}
-                className="w-8 h-8 rounded-lg border border-[#262626] bg-[#171717] hover:bg-[#222] text-[#D4AF37] flex items-center justify-center transition-colors cursor-pointer"
-                title="Agrandir la barre latérale"
-              >
-                <ChevronRightIcon className="w-4 h-4" />
-              </button>
-            </div>
-          )}
 
           {/* Navigation Items */}
           <nav className="p-2 space-y-1 mt-2">
@@ -261,13 +243,14 @@ export default function Sidebar({
             </div>
 
             {!isCollapsed && (
-              <Link
-                href="/login"
-                className="p-1.5 rounded-lg text-neutral-400 hover:text-red-400 hover:bg-[#262626] transition-colors"
+              <button
+                type="button"
+                onClick={onLogout}
+                className="p-1.5 rounded-lg text-neutral-400 hover:text-red-400 hover:bg-[#262626] transition-colors cursor-pointer"
                 title="Déconnexion"
               >
                 <ArrowLeftOnRectangleIcon className="w-4 h-4" />
-              </Link>
+              </button>
             )}
           </div>
         </div>
@@ -285,7 +268,7 @@ export default function Sidebar({
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={closeMobile}
-              className="fixed inset-0 z-50 bg-black/70 backdrop-blur-xs md:hidden"
+              className="fixed inset-0 z-50 bg-black/85 md:hidden"
             />
 
             {/* Sliding Drawer */}
@@ -376,9 +359,16 @@ export default function Sidebar({
                     </div>
                     <span className="text-xs font-medium text-neutral-200">Atelier Koffi</span>
                   </div>
-                  <Link href="/login" className="text-xs text-neutral-400 hover:text-red-400">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      closeMobile();
+                      onLogout?.();
+                    }}
+                    className="text-xs text-neutral-400 hover:text-red-400 cursor-pointer"
+                  >
                     <ArrowLeftOnRectangleIcon className="w-4 h-4" />
-                  </Link>
+                  </button>
                 </div>
               </div>
             </motion.div>

@@ -92,7 +92,7 @@ export default function Footer() {
             <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: "10px" }}>
               {[
                 { label: "Produit", href: "#produit" },
-                { label: "Pricing", href: "#pricing" },
+                { label: "Tarifs", href: "#pricing" },
                 { label: "FAQ", href: "#faq" },
               ].map((link) => (
                 <li key={link.label}>

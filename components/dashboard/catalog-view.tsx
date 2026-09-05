@@ -297,7 +297,7 @@ export default function CatalogView({ onSelectItemForInvoice }: CatalogViewProps
           <button
             type="button"
             onClick={handleOpenAdd}
-            className="flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-[#D4AF37] hover:bg-[#e2b170] text-[#0C0C0C] text-sm font-semibold transition-colors cursor-pointer shrink-0"
+            className="flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-[#D4AF37] hover:bg-[#e2b170] text-[#000000] text-sm font-semibold transition-colors cursor-pointer shrink-0"
           >
             <PlusIcon className="w-4 h-4 stroke-[2.5]" />
             <span>+ Ajouter une prestation</span>
@@ -345,7 +345,7 @@ export default function CatalogView({ onSelectItemForInvoice }: CatalogViewProps
             placeholder="Rechercher une prestation..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-9 pr-3 py-1.5 bg-[#0C0C0C] border border-[#262626] rounded-xl text-xs text-white placeholder-neutral-500 focus:outline-none focus:border-[#D4AF37] transition-colors"
+            className="w-full pl-9 pr-3 py-1.5 bg-[#000000] border border-[#262626] rounded-xl text-xs text-white placeholder-neutral-500 focus:outline-none focus:border-[#D4AF37] transition-colors"
           />
         </div>
       </div>
@@ -369,7 +369,7 @@ export default function CatalogView({ onSelectItemForInvoice }: CatalogViewProps
               <button
                 type="button"
                 onClick={handleOpenAdd}
-                className="py-2 px-4 rounded-xl bg-[#D4AF37] text-[#0C0C0C] text-xs font-semibold cursor-pointer"
+                className="py-2 px-4 rounded-xl bg-[#D4AF37] text-[#000000] text-xs font-semibold cursor-pointer"
               >
                 + Ajouter ma première prestation
               </button>
@@ -466,7 +466,7 @@ export default function CatalogView({ onSelectItemForInvoice }: CatalogViewProps
 
       {/* Add / Edit Modal Dialog */}
       {(isAddOpen || editItem) && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4">
           <div className="w-full max-w-md bg-[#171717] border border-[#262626] rounded-2xl p-6 space-y-4 shadow-none">
             <div className="flex items-center justify-between border-b border-[#262626] pb-3">
               <h3
@@ -495,7 +495,7 @@ export default function CatalogView({ onSelectItemForInvoice }: CatalogViewProps
                 <select
                   value={category}
                   onChange={(e) => setCategory(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#0C0C0C] border border-[#262626] text-sm text-white focus:outline-none focus:border-[#D4AF37] transition-colors"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#000000] border border-[#262626] text-sm text-white focus:outline-none focus:border-[#D4AF37] transition-colors"
                 >
                   {categories.map((c) => (
                     <option key={c} value={c}>
@@ -514,7 +514,7 @@ export default function CatalogView({ onSelectItemForInvoice }: CatalogViewProps
                   placeholder="Ex: Soudure & Ferronnerie / Sérigraphie"
                   value={customCategoryInput}
                   onChange={(e) => setCustomCategoryInput(e.target.value)}
-                  className="w-full px-3.5 py-2 rounded-xl bg-[#0C0C0C] border border-[#262626] text-xs text-white placeholder-neutral-500 focus:outline-none focus:border-[#D4AF37] transition-colors"
+                  className="w-full px-3.5 py-2 rounded-xl bg-[#000000] border border-[#262626] text-xs text-white placeholder-neutral-500 focus:outline-none focus:border-[#D4AF37] transition-colors"
                 />
               </div>
 
@@ -527,7 +527,7 @@ export default function CatalogView({ onSelectItemForInvoice }: CatalogViewProps
                   placeholder="Ex: Confection costume 3 pièces Bazin"
                   value={label}
                   onChange={(e) => setLabel(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#0C0C0C] border border-[#262626] text-sm text-white placeholder-neutral-500 focus:outline-none focus:border-[#D4AF37] transition-colors"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#000000] border border-[#262626] text-sm text-white placeholder-neutral-500 focus:outline-none focus:border-[#D4AF37] transition-colors"
                 />
               </div>
 
@@ -540,7 +540,7 @@ export default function CatalogView({ onSelectItemForInvoice }: CatalogViewProps
                   placeholder="Détails des matériaux ou prestations incluses..."
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#0C0C0C] border border-[#262626] text-sm text-white placeholder-neutral-500 focus:outline-none focus:border-[#D4AF37] transition-colors"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#000000] border border-[#262626] text-sm text-white placeholder-neutral-500 focus:outline-none focus:border-[#D4AF37] transition-colors"
                 />
               </div>
 
@@ -554,7 +554,7 @@ export default function CatalogView({ onSelectItemForInvoice }: CatalogViewProps
                   step={500}
                   value={price}
                   onChange={(e) => setPrice(Number(e.target.value) || 0)}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#0C0C0C] border border-[#262626] text-sm text-white font-mono focus:outline-none focus:border-[#D4AF37] transition-colors"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#000000] border border-[#262626] text-sm text-white font-mono focus:outline-none focus:border-[#D4AF37] transition-colors"
                 />
               </div>
             </div>
@@ -573,7 +573,7 @@ export default function CatalogView({ onSelectItemForInvoice }: CatalogViewProps
               <button
                 type="button"
                 onClick={handleSaveItem}
-                className="flex-1 py-2.5 rounded-xl bg-[#D4AF37] text-[#0C0C0C] text-xs font-semibold hover:bg-[#e2b170] transition-colors"
+                className="flex-1 py-2.5 rounded-xl bg-[#D4AF37] text-[#000000] text-xs font-semibold hover:bg-[#e2b170] transition-colors"
               >
                 Enregistrer
               </button>
@@ -584,7 +584,7 @@ export default function CatalogView({ onSelectItemForInvoice }: CatalogViewProps
 
       {/* Clear All Confirmation Modal */}
       {isClearConfirmOpen && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4">
           <div className="w-full max-w-sm bg-[#171717] border border-[#262626] rounded-2xl p-6 space-y-3">
             <h3
               style={{ fontFamily: "'DM Serif Display', serif" }}
@@ -618,7 +618,7 @@ export default function CatalogView({ onSelectItemForInvoice }: CatalogViewProps
 
       {/* Delete Single Item Modal */}
       {deleteItem && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4">
           <div className="w-full max-w-sm bg-[#171717] border border-[#262626] rounded-2xl p-6 space-y-3">
             <h3
               style={{ fontFamily: "'DM Serif Display', serif" }}

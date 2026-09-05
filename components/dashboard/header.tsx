@@ -1,11 +1,10 @@
 "use client";
 
 import React, { useState } from "react";
-import Link from "next/link";
+import { motion } from "framer-motion";
 import {
   Bars3Icon,
   ChevronLeftIcon,
-  ChevronRightIcon,
   PlusIcon,
   UserCircleIcon,
   ArrowLeftOnRectangleIcon,
@@ -36,42 +35,48 @@ export default function DashboardHeader({
     new: { section: "Facturation", page: "Nouveau document" },
     catalog: { section: "Gestion", page: "Catalogue d'articles" },
     settings: { section: "Configuration", page: "Profil & Cachet" },
+    "pdf-preview": { section: "Test", page: "Aperçu PDF (données factices)" },
   };
 
   const breadcrumb = viewTitles[currentView] || { section: "Cockpit", page: title };
 
   return (
-    <header className="sticky top-0 z-30 h-16 bg-[#0C0C0C]/90 backdrop-blur-md border-b border-[#262626] px-4 sm:px-6 flex items-center justify-between transition-all select-none">
+    <header className="sticky top-0 z-30 h-16 bg-[#000000] border-b border-[#262626] px-4 sm:px-6 flex items-center justify-between transition-all select-none">
       {/* ──────────────────────────────────────────────────────────────────────────
           GAUCHE : Sidebar Trigger + Breadcrumbs
+          (Seul et unique déclencheur de collapse/expand de la sidebar — celui qui
+          existait aussi dans sidebar.tsx a été retiré pour éviter le doublon.)
       ────────────────────────────────────────────────────────────────────────── */}
       <div className="flex items-center gap-3">
         {/* Mobile Hamburger */}
         <button
           type="button"
           onClick={toggleMobile}
-          className="md:hidden p-2 rounded-lg text-neutral-300 hover:text-white hover:bg-[#171717] border border-[#262626] transition-colors"
+          className="md:hidden p-2 rounded-lg text-neutral-300 hover:text-white hover:bg-[#171717] border border-[#262626] transition-colors cursor-pointer"
           title="Menu de navigation"
         >
           <Bars3Icon className="w-5 h-5" />
         </button>
 
-        {/* Desktop Sidebar Collapse / Expand Button */}
+        {/* Desktop Sidebar Collapse / Expand Button — seul déclencheur, style peaufiné */}
         <button
           type="button"
           onClick={toggleSidebar}
-          className="hidden md:flex items-center justify-center w-8 h-8 rounded-lg text-neutral-400 hover:text-white hover:bg-[#171717] border border-[#262626] transition-colors cursor-pointer"
+          className="hidden md:flex items-center justify-center w-9 h-9 rounded-xl text-neutral-400 hover:text-[#D4AF37] bg-[#171717] hover:bg-[#1d1d1d] border border-[#262626] hover:border-[#D4AF37]/40 transition-all cursor-pointer active:scale-95"
           title={isCollapsed ? "Déplier la barre latérale" : "Replier la barre latérale"}
         >
-          {isCollapsed ? (
-            <ChevronRightIcon className="w-4 h-4 text-[#D4AF37]" />
-          ) : (
+          <motion.span
+            initial={false}
+            animate={{ rotate: isCollapsed ? 180 : 0 }}
+            transition={{ duration: 0.25, ease: "easeOut" }}
+            className="flex items-center justify-center"
+          >
             <ChevronLeftIcon className="w-4 h-4" />
-          )}
+          </motion.span>
         </button>
 
         {/* Separator */}
-        <div className="hidden sm:block h-4 w-[1px] bg-[#262626]" />
+        <div className="hidden sm:block h-5 w-[1px] bg-[#262626]" />
 
         {/* Breadcrumb Navigation */}
         <nav className="flex items-center gap-2 text-xs font-medium">
@@ -107,7 +112,7 @@ export default function DashboardHeader({
           <button
             type="button"
             onClick={() => onViewChange("new")}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#D4AF37] hover:bg-[#e2b170] text-[#0C0C0C] text-xs font-semibold transition-colors cursor-pointer"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#D4AF37] hover:bg-[#e2b170] text-[#000000] text-xs font-semibold transition-colors cursor-pointer"
           >
             <PlusIcon className="w-4 h-4" />
             <span className="hidden sm:inline">Créer un document</span>
@@ -170,17 +175,17 @@ export default function DashboardHeader({
 
                 <div className="border-t border-[#262626] my-1" />
 
-                <Link
-                  href="/login"
+                <button
+                  type="button"
                   onClick={() => {
                     setIsDropdownOpen(false);
-                    if (onLogout) onLogout();
+                    onLogout?.();
                   }}
-                  className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-red-400 hover:bg-red-950/40 transition-colors text-left no-underline"
+                  className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-red-400 hover:bg-red-950/40 transition-colors text-left cursor-pointer"
                 >
                   <ArrowLeftOnRectangleIcon className="w-4 h-4" />
                   <span>Se déconnecter</span>
-                </Link>
+                </button>
               </div>
             </>
           )}

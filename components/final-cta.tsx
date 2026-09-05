@@ -56,7 +56,7 @@ export default function FinalCta() {
 
           <motion.div whileHover={{ y: -1 }} transition={{ duration: 0.15 }}>
             <Link
-              href="/login"
+              href="/login?tab=register"
               style={{
                 display: "inline-flex",
                 alignItems: "center",

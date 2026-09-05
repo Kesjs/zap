@@ -2,10 +2,14 @@
 
 import { useState, useEffect } from "react";
 import Image from "next/image";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import {
   PencilSquareIcon,
   CheckBadgeIcon,
+  DocumentTextIcon,
+  DocumentCheckIcon,
+  ReceiptRefundIcon,
+  DocumentArrowDownIcon,
 } from "@heroicons/react/24/outline";
 
 // ─── Precision Card Component (Flat, sans ombres lourdes) ───────────────────
@@ -204,7 +208,71 @@ function StampCrossfade() {
   );
 }
 
-// ─── Main Signature & Cachet Section ─────────────────────────────────────────
+// ─── Bande récap : Devis / Factures / Reçus / PDF & WhatsApp ───────────────
+const recapChips = [
+  { label: "Devis", icon: DocumentTextIcon },
+  { label: "Factures", icon: DocumentCheckIcon },
+  { label: "Reçus", icon: ReceiptRefundIcon },
+  { label: "PDF & WhatsApp", icon: DocumentArrowDownIcon },
+];
+
+function DocumentRecapBand() {
+  return (
+    <div
+      style={{
+        marginTop: "56px",
+        paddingTop: "32px",
+        borderTop: "1px solid #262626",
+      }}
+    >
+      <div
+        style={{
+          display: "flex",
+          flexWrap: "wrap",
+          justifyContent: "center",
+          gap: "12px",
+        }}
+      >
+        {recapChips.map((chip, index) => {
+          const Icon = chip.icon;
+          return (
+            <motion.div
+              key={chip.label}
+              initial={{ opacity: 0, y: 12 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.4 }}
+              transition={{ duration: 0.4, delay: index * 0.08, ease: "easeOut" }}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "8px",
+                background: "#171717",
+                border: "1px solid #262626",
+                borderRadius: "100px",
+                padding: "9px 16px",
+              }}
+            >
+              <Icon style={{ width: 16, height: 16, color: "#D4AF37" }} />
+              <span
+                style={{
+                  fontFamily: "'DM Sans', sans-serif",
+                  fontSize: "13px",
+                  fontWeight: 400,
+                  color: "rgba(244, 244, 245, 0.80)",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {chip.label}
+              </span>
+            </motion.div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ─── Main Signature & Cachet Section (fusionnée) ────────────────────────────
 export default function SignatureSeal() {
   return (
     <section
@@ -219,7 +287,7 @@ export default function SignatureSeal() {
           <motion.h2
             initial={{ opacity: 0, y: 14 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
+            viewport={{ once: true, amount: 0.4 }}
             transition={{ duration: 0.5 }}
             style={{
               fontFamily: "'DM Serif Display', serif",
@@ -235,7 +303,7 @@ export default function SignatureSeal() {
           <motion.p
             initial={{ opacity: 0, y: 10 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
+            viewport={{ once: true, amount: 0.4 }}
             transition={{ duration: 0.5, delay: 0.1 }}
             style={{
               fontFamily: "'DM Sans', sans-serif",
@@ -264,7 +332,7 @@ export default function SignatureSeal() {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
+            viewport={{ once: true, amount: 0.3 }}
             transition={{ duration: 0.5 }}
           >
             <BorderGlowCard style={{ padding: "28px" }}>
@@ -328,7 +396,7 @@ export default function SignatureSeal() {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
+            viewport={{ once: true, amount: 0.3 }}
             transition={{ duration: 0.5, delay: 0.15 }}
           >
             <BorderGlowCard style={{ padding: "28px" }}>
@@ -366,6 +434,9 @@ export default function SignatureSeal() {
             </BorderGlowCard>
           </motion.div>
         </div>
+
+        {/* Bande récap : types de documents + sortie PDF/WhatsApp */}
+        <DocumentRecapBand />
       </div>
     </section>
   );

@@ -1,10 +1,10 @@
 import Hero from "@/components/hero";
 import CraftsMarquee from "@/components/crafts-marquee";
-import DocumentsSimple from "@/components/documents-simple";
 import SignatureSeal from "@/components/signature-seal";
-import PdfReady from "@/components/pdf-ready";
 import HowItWorks from "@/components/how-it-works";
 import Testimonials from "@/components/testimonials";
+import CatalogRegistry from "@/components/catalog-registry";
+import TrustBanner from "@/components/trust-banner";
 import Pricing from "@/components/pricing";
 import Faq from "@/components/faq";
 import FinalCta from "@/components/final-cta";
@@ -26,31 +26,31 @@ export default function Home() {
       {/* 3. Bandeau 'Pensé pour votre métier' (Marquee) */}
       <CraftsMarquee />
 
-      {/* 4. Tous vos documents, simplement. */}
-      <DocumentsSimple />
-
-      {/* 5. Votre signature. Votre cachet. */}
+      {/* 4. Votre signature. Votre cachet. (fusion : signature + cachet + types de docs + PDF/WhatsApp) */}
       <SignatureSeal />
 
-      {/* 6. Prêt à être envoyé. (PDF) */}
-      <PdfReady />
-
-      {/* 7. Comment ça marche */}
+      {/* 5. Comment ça marche */}
       <HowItWorks />
 
-      {/* 8. Témoignages (avant Pricing) */}
+      {/* 6. Témoignages (avant Pricing) */}
       <Testimonials />
 
-      {/* 9. Pricing */}
+      {/* 6bis. Catalogue multi-métiers & Registre/trésorerie (explique ce que Pricing vend) */}
+      <CatalogRegistry />
+
+      {/* 6ter. Bandeau moyens de paiement acceptés (repère de confiance juste avant le prix) */}
+      <TrustBanner />
+
+      {/* 7. Pricing */}
       <Pricing />
 
-      {/* 10. FAQ */}
+      {/* 8. FAQ */}
       <Faq />
 
-      {/* 11. Bandeau CTA final */}
+      {/* 9. Bandeau CTA final */}
       <FinalCta />
 
-      {/* 12. Footer */}
+      {/* 10. Footer */}
       <Footer />
     </main>
   );

@@ -5,7 +5,7 @@ import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { CheckIcon } from "@heroicons/react/24/solid";
 
-// ─── BorderGlow Card for Pro Plan ───────────────────────────────────────────
+// ─── BorderGlow Card ─────────────────────────────────────────────────────────
 function BorderGlowCard({
   children,
   featured = false,
@@ -62,6 +62,75 @@ function BorderGlowCard({
   );
 }
 
+// ─── Plan Data ───────────────────────────────────────────────────────────────
+// Le quota ne change JAMAIS avec le toggle Mensuel/Annuel : seul le prix change.
+// Ça évite toute ambiguïté (contrairement à l'ancienne version 80 vs 120 docs/mois).
+type Plan = {
+  key: string;
+  name: string;
+  badge?: string;
+  featured: boolean;
+  monthly: { amount: string; suffix: string };
+  annual: { amount: string; suffix: string };
+  description: string;
+  ctaLabel: string;
+  features: string[];
+  footnote?: string;
+};
+
+const plans: Plan[] = [
+  {
+    key: "free",
+    name: "Gratuit",
+    featured: false,
+    monthly: { amount: "0 FCFA", suffix: "/pour toujours" },
+    annual: { amount: "0 FCFA", suffix: "/pour toujours" },
+    description: "8 documents pour démarrer et tester ZAP sans engagement.",
+    ctaLabel: "Commencer gratuitement",
+    features: [
+      "8 documents gratuits pour démarrer",
+      "Cachet numérique d'atelier",
+      "Signature manuscrite",
+      "Export PDF haute définition",
+      "Partage direct WhatsApp",
+    ],
+  },
+  {
+    key: "standard",
+    name: "Standard",
+    badge: "Populaire",
+    featured: true,
+    monthly: { amount: "3 000 FCFA", suffix: "/mois" },
+    annual: { amount: "27 000 FCFA", suffix: "/an (~2 250 F/mois)" },
+    description: "40 documents par mois, pour formaliser votre activité au quotidien.",
+    ctaLabel: "Choisir Standard",
+    features: [
+      "40 documents par mois",
+      "Modèles personnalisés sauvegardés",
+      "Gestion d'acompte & calcul du solde",
+      "Catalogue d'atelier multi-métiers",
+      "Duplication 1-clic d'un document existant",
+    ],
+    footnote: "Besoin de plus ce mois-ci ? +20 documents pour 2 000 FCFA, sans changer de plan.",
+  },
+  {
+    key: "pro",
+    name: "Pro",
+    featured: false,
+    monthly: { amount: "6 000 FCFA", suffix: "/mois" },
+    annual: { amount: "54 000 FCFA", suffix: "/an (~4 500 F/mois)" },
+    description: "Documents illimités, pour les ateliers à fort volume.",
+    ctaLabel: "Passer à Pro",
+    features: [
+      "Documents illimités, sans compter",
+      "Registre des ventes & trésorerie complète",
+      "Catégories personnalisées illimitées",
+      "Cachet & signature réutilisables à l'infini",
+      "Support prioritaire",
+    ],
+  },
+];
+
 export default function Pricing() {
   const [isAnnual, setIsAnnual] = useState(false);
 
@@ -73,7 +142,7 @@ export default function Pricing() {
         padding: "96px 24px",
       }}
     >
-      <div style={{ maxWidth: "860px", margin: "0 auto" }}>
+      <div style={{ maxWidth: "980px", margin: "0 auto" }}>
         {/* Section Header */}
         <div style={{ textAlign: "center", marginBottom: "40px" }}>
           <motion.h2
@@ -198,7 +267,7 @@ export default function Pricing() {
           </div>
         </div>
 
-        {/* Pricing Cards Grid (Fixed Heights to Prevent Jumps) */}
+        {/* Pricing Cards Grid (3 paliers) */}
         <div
           style={{
             display: "grid",
@@ -207,285 +276,160 @@ export default function Pricing() {
             alignItems: "stretch",
           }}
         >
-          {/* Card 1: Gratuit */}
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5 }}
-          >
-            <BorderGlowCard featured={false}>
-              <p
-                style={{
-                  fontFamily: "'DM Sans', sans-serif",
-                  fontSize: "11px",
-                  fontWeight: 500,
-                  letterSpacing: "0.1em",
-                  textTransform: "uppercase",
-                  color: "rgba(244, 244, 245, 0.45)",
-                  margin: "0 0 14px",
-                }}
+          {plans.map((plan, index) => {
+            const price = isAnnual ? plan.annual : plan.monthly;
+            return (
+              <motion.div
+                key={plan.key}
+                initial={{ opacity: 0, y: 16 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
               >
-                Gratuit
-              </p>
-
-              <div style={{ height: "48px", display: "flex", alignItems: "baseline", gap: "6px", marginBottom: "8px" }}>
-                <span
-                  style={{
-                    fontFamily: "'DM Serif Display', serif",
-                    fontSize: "36px",
-                    color: "#F4F4F5",
-                    lineHeight: 1,
-                  }}
-                >
-                  0 FCFA
-                </span>
-                <span
-                  style={{
-                    fontFamily: "'DM Sans', sans-serif",
-                    fontSize: "13px",
-                    color: "rgba(244, 244, 245, 0.45)",
-                  }}
-                >
-                  /pour toujours
-                </span>
-              </div>
-
-              <p
-                style={{
-                  fontFamily: "'DM Sans', sans-serif",
-                  fontSize: "13.5px",
-                  fontWeight: 300,
-                  color: "rgba(244, 244, 245, 0.55)",
-                  lineHeight: 1.5,
-                  margin: "0 0 24px",
-                  minHeight: "42px",
-                }}
-              >
-                8 documents pour démarrer et tester ZAP sans engagement.
-              </p>
-
-              <Link
-                href="/login"
-                style={{
-                  display: "block",
-                  textAlign: "center",
-                  background: "rgba(244, 244, 245, 0.08)",
-                  border: "1px solid #262626",
-                  color: "#F4F4F5",
-                  fontFamily: "'DM Sans', sans-serif",
-                  fontSize: "14px",
-                  fontWeight: 500,
-                  padding: "12px",
-                  borderRadius: "10px",
-                  textDecoration: "none",
-                  marginBottom: "28px",
-                  transition: "background 0.2s ease",
-                }}
-              >
-                Commencer gratuitement
-              </Link>
-
-              <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: "12px" }}>
-                {[
-                  "8 documents gratuits pour démarrer",
-                  "Cachet numérique d'atelier",
-                  "Signature manuscrite",
-                  "Export PDF haute définition",
-                  "Partage direct WhatsApp",
-                ].map((item) => (
-                  <li key={item} className="flex items-start gap-2.5 text-[13.5px]">
-                    <CheckIcon style={{ width: 16, height: 16, color: "#D4AF37", flexShrink: 0, marginTop: "2px" }} />
-                    <span style={{ fontFamily: "'DM Sans', sans-serif", color: "rgba(244, 244, 245, 0.70)" }}>
-                      {item}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            </BorderGlowCard>
-          </motion.div>
-
-          {/* Card 2: Pro (Featured with BorderGlow) */}
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5, delay: 0.1 }}
-          >
-            <BorderGlowCard featured={true}>
-              <div className="flex justify-between items-center mb-3.5">
-                <p
-                  style={{
-                    fontFamily: "'DM Sans', sans-serif",
-                    fontSize: "11px",
-                    fontWeight: 600,
-                    letterSpacing: "0.1em",
-                    textTransform: "uppercase",
-                    color: "#D4AF37",
-                    margin: 0,
-                  }}
-                >
-                  Pro
-                </p>
-                <span
-                  style={{
-                    background: "rgba(212, 175, 55, 0.15)",
-                    border: "1px solid rgba(212, 175, 55, 0.35)",
-                    color: "#D4AF37",
-                    fontSize: "10px",
-                    fontWeight: 500,
-                    fontFamily: "'DM Sans', sans-serif",
-                    padding: "2px 8px",
-                    borderRadius: "100px",
-                  }}
-                >
-                  Populaire
-                </span>
-              </div>
-
-              {/* Animated Price with AnimatePresence mode='wait' */}
-              <div
-                style={{
-                  height: "48px",
-                  display: "flex",
-                  alignItems: "baseline",
-                  gap: "6px",
-                  marginBottom: "8px",
-                  overflow: "hidden",
-                }}
-              >
-                <AnimatePresence mode="wait">
-                  {isAnnual ? (
-                    <motion.div
-                      key="annual-price"
-                      initial={{ opacity: 0, y: 12 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -12 }}
-                      transition={{ duration: 0.25 }}
-                      className="flex items-baseline gap-2"
+                <BorderGlowCard featured={plan.featured}>
+                  <div className="flex justify-between items-center mb-3.5">
+                    <p
+                      style={{
+                        fontFamily: "'DM Sans', sans-serif",
+                        fontSize: "11px",
+                        fontWeight: plan.featured ? 600 : 500,
+                        letterSpacing: "0.1em",
+                        textTransform: "uppercase",
+                        color: plan.featured ? "#D4AF37" : "rgba(244, 244, 245, 0.45)",
+                        margin: 0,
+                      }}
                     >
+                      {plan.name}
+                    </p>
+                    {plan.badge && (
                       <span
                         style={{
-                          fontFamily: "'DM Serif Display', serif",
-                          fontSize: "36px",
-                          color: "#F4F4F5",
-                          lineHeight: 1,
-                        }}
-                      >
-                        45 000 FCFA
-                      </span>
-                      <span
-                        style={{
+                          background: "rgba(212, 175, 55, 0.15)",
+                          border: "1px solid rgba(212, 175, 55, 0.35)",
+                          color: "#D4AF37",
+                          fontSize: "10px",
+                          fontWeight: 500,
                           fontFamily: "'DM Sans', sans-serif",
-                          fontSize: "13px",
-                          color: "rgba(244, 244, 245, 0.45)",
+                          padding: "2px 8px",
+                          borderRadius: "100px",
                         }}
                       >
-                        /an (~3 750 F/mois)
+                        {plan.badge}
                       </span>
-                    </motion.div>
-                  ) : (
-                    <motion.div
-                      key="monthly-price"
-                      initial={{ opacity: 0, y: 12 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -12 }}
-                      transition={{ duration: 0.25 }}
-                      className="flex items-baseline gap-2"
+                    )}
+                  </div>
+
+                  {/* Animated Price */}
+                  <div
+                    style={{
+                      height: "48px",
+                      display: "flex",
+                      alignItems: "baseline",
+                      gap: "6px",
+                      marginBottom: "8px",
+                      overflow: "hidden",
+                    }}
+                  >
+                    <AnimatePresence mode="wait">
+                      <motion.div
+                        key={isAnnual ? `${plan.key}-annual` : `${plan.key}-monthly`}
+                        initial={{ opacity: 0, y: 12 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -12 }}
+                        transition={{ duration: 0.25 }}
+                        className="flex items-baseline gap-2"
+                      >
+                        <span
+                          style={{
+                            fontFamily: "'DM Serif Display', serif",
+                            fontSize: "36px",
+                            color: "#F4F4F5",
+                            lineHeight: 1,
+                          }}
+                        >
+                          {price.amount}
+                        </span>
+                        <span
+                          style={{
+                            fontFamily: "'DM Sans', sans-serif",
+                            fontSize: "13px",
+                            color: "rgba(244, 244, 245, 0.45)",
+                          }}
+                        >
+                          {price.suffix}
+                        </span>
+                      </motion.div>
+                    </AnimatePresence>
+                  </div>
+
+                  <p
+                    style={{
+                      fontFamily: "'DM Sans', sans-serif",
+                      fontSize: "13.5px",
+                      fontWeight: 300,
+                      color: "rgba(244, 244, 245, 0.55)",
+                      lineHeight: 1.5,
+                      margin: "0 0 24px",
+                      minHeight: "42px",
+                    }}
+                  >
+                    {plan.description}
+                  </p>
+
+                  <Link
+                    href="/login?tab=register"
+                    style={{
+                      display: "block",
+                      textAlign: "center",
+                      background: plan.featured
+                        ? "linear-gradient(135deg, #D4AF37 0%, #E2B170 100%)"
+                        : "rgba(244, 244, 245, 0.08)",
+                      border: plan.featured ? "none" : "1px solid #262626",
+                      color: plan.featured ? "#0C0C0C" : "#F4F4F5",
+                      fontFamily: "'DM Sans', sans-serif",
+                      fontSize: "14px",
+                      fontWeight: 500,
+                      padding: "12px",
+                      borderRadius: "10px",
+                      textDecoration: "none",
+                      marginBottom: "28px",
+                      transition: "background 0.2s ease",
+                    }}
+                  >
+                    {plan.ctaLabel}
+                  </Link>
+
+                  <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: "12px" }}>
+                    {plan.features.map((item) => (
+                      <li key={item} className="flex items-start gap-2.5 text-[13.5px]">
+                        <CheckIcon style={{ width: 16, height: 16, color: "#D4AF37", flexShrink: 0, marginTop: "2px" }} />
+                        <span style={{ fontFamily: "'DM Sans', sans-serif", color: "rgba(244, 244, 245, 0.70)" }}>
+                          {item}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+
+                  {plan.footnote && (
+                    <p
+                      style={{
+                        fontFamily: "'DM Sans', sans-serif",
+                        fontSize: "12px",
+                        color: "rgba(244, 244, 245, 0.45)",
+                        lineHeight: 1.5,
+                        marginTop: "20px",
+                        paddingTop: "16px",
+                        borderTop: "1px solid #262626",
+                      }}
                     >
-                      <span
-                        style={{
-                          fontFamily: "'DM Serif Display', serif",
-                          fontSize: "36px",
-                          color: "#F4F4F5",
-                          lineHeight: 1,
-                        }}
-                      >
-                        5 000 FCFA
-                      </span>
-                      <span
-                        style={{
-                          fontFamily: "'DM Sans', sans-serif",
-                          fontSize: "13px",
-                          color: "rgba(244, 244, 245, 0.45)",
-                        }}
-                      >
-                        /mois
-                      </span>
-                    </motion.div>
+                      {plan.footnote}
+                    </p>
                   )}
-                </AnimatePresence>
-              </div>
-
-              <p
-                style={{
-                  fontFamily: "'DM Sans', sans-serif",
-                  fontSize: "13.5px",
-                  fontWeight: 300,
-                  color: "rgba(244, 244, 245, 0.55)",
-                  lineHeight: 1.5,
-                  margin: "0 0 24px",
-                  minHeight: "42px",
-                }}
-              >
-                {isAnnual
-                  ? "120 documents/mois pour les ateliers et commerçants actifs."
-                  : "80 documents/mois pour formaliser votre activité au quotidien."}
-              </p>
-
-              <Link
-                href="/login"
-                style={{
-                  display: "block",
-                  textAlign: "center",
-                  background: "linear-gradient(135deg, #D4AF37 0%, #E2B170 100%)",
-                  color: "#0C0C0C",
-                  fontFamily: "'DM Sans', sans-serif",
-                  fontSize: "14px",
-                  fontWeight: 500,
-                  padding: "12px",
-                  borderRadius: "10px",
-                  textDecoration: "none",
-                  marginBottom: "28px",
-                }}
-              >
-                Passer à Pro
-              </Link>
-
-              <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: "12px" }}>
-                {[
-                  isAnnual
-                    ? "120 documents par mois"
-                    : "80 documents par mois",
-                  "Cachet & signature réutilisables à l'infini",
-                  "Historique illimité et recherche instantanée",
-                  "Support prioritaire WhatsApp 7j/7",
-                  "Recharge à l'unité disponible sans changer de plan",
-                ].map((item) => (
-                  <li key={item} className="flex items-start gap-2.5 text-[13.5px]">
-                    <CheckIcon style={{ width: 16, height: 16, color: "#D4AF37", flexShrink: 0, marginTop: "2px" }} />
-                    <span style={{ fontFamily: "'DM Sans', sans-serif", color: "rgba(244, 244, 245, 0.75)" }}>
-                      {item}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            </BorderGlowCard>
-          </motion.div>
+                </BorderGlowCard>
+              </motion.div>
+            );
+          })}
         </div>
-
-        {/* Note under cards */}
-        <p
-          style={{
-            fontFamily: "'DM Sans', sans-serif",
-            fontSize: "12.5px",
-            color: "rgba(244, 244, 245, 0.40)",
-            textAlign: "center",
-            marginTop: "28px",
-          }}
-        >
-          Besoin de plus ? Rechargez à l&apos;unité à tout moment.
-        </p>
       </div>
     </section>
   );

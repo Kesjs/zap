@@ -50,8 +50,13 @@ function extendMaterial(BaseMaterial, cfg) {
   return mat;
 }
 
-const CanvasWrapper = ({ children }) => (
-  <Canvas dpr={[1, 1.5]} frameloop="always" className="beams-container">
+const CanvasWrapper = ({ children, onReady }) => (
+  <Canvas
+    dpr={[1, 1.5]}
+    frameloop="always"
+    className="beams-container"
+    onCreated={() => onReady?.()}
+  >
     {children}
   </Canvas>
 );
@@ -152,7 +157,8 @@ const Beams = ({
   noiseIntensity = 1.5,
   scale = 0.2,
   rotation = 0,
-  lightMode = false
+  lightMode = false,
+  onReady
 }) => {
   const meshRef = useRef(null);
   const beamMaterial = useMemo(
@@ -220,7 +226,7 @@ const Beams = ({
   );
 
   return (
-    <CanvasWrapper>
+    <CanvasWrapper onReady={onReady}>
       <group rotation={[0, 0, degToRad(rotation)]}>
         <PlaneNoise ref={meshRef} material={beamMaterial} count={beamNumber} width={beamWidth} height={beamHeight} />
         <DirLight color={lightColor} position={[0, 3, 10]} />

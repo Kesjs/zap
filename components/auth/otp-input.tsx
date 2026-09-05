@@ -125,7 +125,7 @@ export default function OtpInput({
               isSuccess
                 ? {
                     scale: [1, 1.05, 1],
-                    borderColor: ["#D4AF37", "#4ade80", "#22c55e"],
+                    borderColor: ["#C4634B", "#3F7D5C", "#3F7D5C"],
                   }
                 : undefined
             }
@@ -136,8 +136,8 @@ export default function OtpInput({
             }}
             style={{
               position: "relative",
-              borderRadius: "10px",
-              background: "#171717",
+              borderRadius: "6px",
+              background: "#FFFFFF",
             }}
           >
             <input
@@ -154,22 +154,22 @@ export default function OtpInput({
               onPaste={handlePaste}
               onFocus={() => setFocusedIndex(index)}
               style={{
-                width: "48px",
-                height: "56px",
+                width: "44px",
+                height: "52px",
                 textAlign: "center",
-                fontFamily: "'DM Serif Display', serif",
-                fontSize: "24px",
-                color: isSuccess ? "#4ade80" : "#F4F4F5",
+                fontFamily: "'Fraunces', serif",
+                fontSize: "22px",
+                color: isSuccess ? "#3F7D5C" : "#22314A",
                 background: "transparent",
                 border: hasError
-                  ? "1px solid #ef4444"
+                  ? "1.5px solid #A23B3B"
                   : isFocused
-                  ? "1.5px solid #D4AF37"
-                  : "1px solid #262626",
-                borderRadius: "10px",
+                  ? "1.5px solid #C4634B"
+                  : "1.5px solid rgba(34,49,74,0.22)",
+                borderRadius: "6px",
                 outline: "none",
                 transition: "border-color 0.2s",
-                caretColor: "#D4AF37",
+                caretColor: "#C4634B",
               }}
               aria-label={`Chiffre ${index + 1}`}
             />

@@ -24,6 +24,7 @@ const steps = [
 export default function HowItWorks() {
   return (
     <section
+      id="comment-ca-marche"
       style={{
         background: "#0C0C0C",
         padding: "96px 24px",

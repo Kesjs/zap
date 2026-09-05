@@ -175,7 +175,6 @@ export default function SalesRegistry({
             borderRadius: "12px",
             padding: "12px 20px",
             color: "#F4F4F5",
-            boxShadow: "0 8px 24px rgba(0,0,0,0.6)",
             zIndex: 999,
             display: "flex",
             alignItems: "center",
@@ -230,7 +229,7 @@ export default function SalesRegistry({
                 key={step.title}
                 onClick={step.action}
                 style={{
-                  background: "#0C0C0C",
+                  background: "#000000",
                   border: "1px solid #262626",
                   borderRadius: "12px",
                   padding: "12px 14px",
@@ -418,7 +417,7 @@ export default function SalesRegistry({
               border: "none",
               borderRadius: "12px",
               padding: "0 20px",
-              color: "#0C0C0C",
+              color: "#000000",
               fontFamily: "'DM Sans', sans-serif",
               fontSize: "14px",
               fontWeight: 500,
@@ -623,7 +622,7 @@ export default function SalesRegistry({
                       onClick={() => handleOpenEncaisser(doc)}
                       style={{
                         background: "#D4AF37",
-                        color: "#0C0C0C",
+                        color: "#000000",
                         border: "none",
                         borderRadius: "8px",
                         padding: "6px 12px",
@@ -663,8 +662,7 @@ export default function SalesRegistry({
             position: "fixed",
             inset: 0,
             zIndex: 1000,
-            background: "rgba(0,0,0,0.8)",
-            backdropFilter: "blur(4px)",
+            background: "rgba(0,0,0,0.9)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -719,7 +717,7 @@ export default function SalesRegistry({
                     style={{
                       height: "38px",
                       borderRadius: "10px",
-                      background: paymentMode === mode ? "rgba(212, 175, 55, 0.15)" : "#0C0C0C",
+                      background: paymentMode === mode ? "rgba(212, 175, 55, 0.15)" : "#000000",
                       border: paymentMode === mode ? "1.5px solid #D4AF37" : "1px solid #262626",
                       color: paymentMode === mode ? "#D4AF37" : "#F4F4F5",
                       fontFamily: "'DM Sans', sans-serif",
@@ -746,7 +744,7 @@ export default function SalesRegistry({
                 style={{
                   width: "100%",
                   height: "44px",
-                  background: "#0C0C0C",
+                  background: "#000000",
                   border: "1px solid #262626",
                   borderRadius: "10px",
                   padding: "0 14px",
@@ -787,7 +785,7 @@ export default function SalesRegistry({
                   background: "linear-gradient(135deg, #D4AF37 0%, #E2B170 100%)",
                   border: "none",
                   borderRadius: "10px",
-                  color: "#0C0C0C",
+                  color: "#000000",
                   fontSize: "14px",
                   fontWeight: 500,
                   cursor: "pointer",

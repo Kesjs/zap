@@ -9,6 +9,10 @@ import SalesRegistry, { DocumentItem } from "@/components/dashboard/sales-regist
 import DocumentEditor, { LineItem } from "@/components/dashboard/document-editor";
 import SettingsStamp from "@/components/dashboard/settings-stamp";
 import CatalogView, { CatalogItem } from "@/components/dashboard/catalog-view";
+import PdfPreview from "@/components/dashboard/pdf-preview";
+import { createClient } from "@/lib/supabase/client";
+
+const supabase = createClient();
 
 function DashboardMainContent() {
   const { isCollapsed } = useSidebar();
@@ -26,6 +30,7 @@ function DashboardMainContent() {
     new: "Éditeur 1-clic — Nouveau document",
     catalog: "Catalogue & Modèles de prix",
     settings: "Paramètres & Empreinte d'atelier",
+    "pdf-preview": "Aperçu PDF — Mode test (données factices)",
   };
 
   const handleDuplicate = (doc: DocumentItem) => {
@@ -49,18 +54,20 @@ function DashboardMainContent() {
     setCurrentView("new");
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
     window.location.href = "/";
   };
 
   return (
-    <div className="min-h-screen bg-[#0C0C0C] text-[#F4F4F5] flex flex-col">
+    <div className="min-h-screen bg-[#000000] text-[#F4F4F5] flex flex-col">
       {/* 1. Sidebar Collapsible Desktop (240px <-> 68px) + Mobile Drawer */}
       <DashboardSidebar
         currentView={currentView}
         onViewChange={(v) => setCurrentView(v)}
         documentCount={documentCount}
         maxDocuments={maxDocuments}
+        onLogout={handleLogout}
       />
 
       {/* 2. Main Content Container with dynamic left margin adapting to Sidebar state */}
@@ -113,6 +120,8 @@ function DashboardMainContent() {
               )}
 
               {currentView === "settings" && <SettingsStamp />}
+
+              {currentView === "pdf-preview" && <PdfPreview />}
             </motion.div>
           </AnimatePresence>
         </main>

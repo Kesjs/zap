@@ -1,11 +1,40 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import dynamic from "next/dynamic";
 
 // Beams component (Three.js canvas) loaded client-side only
 const Beams = dynamic(() => import("@/components/ui/Beams"), { ssr: false });
+
+// ─── Détection perf : Beams (WebGL) réservé au desktop ──────────────────────
+// Sur mobile/tablette (le device réel de la cible artisan/entrepreneur) ou si
+// l'utilisateur a activé "réduire les animations", on affiche un fallback CSS
+// léger à la place du canvas Three.js.
+function useHeavyAnimationAllowed() {
+  const [allowed, setAllowed] = useState(false);
+
+  useEffect(() => {
+    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+
+    const evaluate = () => {
+      const isDesktopWidth = window.innerWidth >= 1024;
+      setAllowed(isDesktopWidth && !mq.matches);
+    };
+
+    evaluate();
+    window.addEventListener("resize", evaluate);
+    mq.addEventListener?.("change", evaluate);
+
+    return () => {
+      window.removeEventListener("resize", evaluate);
+      mq.removeEventListener?.("change", evaluate);
+    };
+  }, []);
+
+  return allowed;
+}
 
 // ─── Badge with BorderBeam ──────────────────────────────────────────────────
 function HeroBadge() {
@@ -84,13 +113,24 @@ function HeroBadge() {
   );
 }
 
-// ─── Hero Visual: Realistic Document Mockup with Progressive Assembly ────────
-// TODO: remplacer par un vrai document produit par l'app
+// ─── Hero Visual: Papier blanc, remplissage auto, stylo + cachet ──────────
 function HeroVisualDocument() {
   const lineItems = [
     { label: "Vidange moteur + filtre", amount: "8 500 FCFA" },
     { label: "Remplacement plaquettes de frein", amount: "12 000 FCFA" },
     { label: "Main-d'œuvre diagnostics", amount: "7 500 FCFA" },
+  ];
+
+  // Points approximant la courbe de signature (viewBox 160x48 → % du conteneur)
+  // pour faire suivre la pointe du stylo au tracé du path SVG.
+  const penPath = [
+    { left: "6%", top: "67%" },
+    { left: "19%", top: "29%" },
+    { left: "34%", top: "50%" },
+    { left: "47%", top: "71%" },
+    { left: "59%", top: "38%" },
+    { left: "69%", top: "75%" },
+    { left: "91%", top: "42%" },
   ];
 
   return (
@@ -101,42 +141,37 @@ function HeroVisualDocument() {
       transition={{ duration: 0.7, ease: "easeOut" }}
       className="w-full max-w-[620px] mx-auto mt-14"
       style={{
-        background: "#171717",
-        border: "1px solid #262626",
+        background: "#FAFAF8",
+        border: "1px solid #E5E1D8",
         borderTop: "3px solid #D4AF37",
         borderRadius: "16px",
         padding: "28px 24px",
         textAlign: "left",
+        boxShadow: "0 24px 60px rgba(0,0,0,0.4)",
       }}
     >
-      {/* Document Header */}
-      <div className="flex items-start justify-between pb-5 border-b border-[#262626]">
+      {/* En-tête */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        whileInView={{ opacity: 1 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.4, delay: 0.3 }}
+        className="flex items-start justify-between pb-5 border-b"
+        style={{ borderColor: "#E5E1D8" }}
+      >
         <div>
-          <p
-            style={{
-              fontFamily: "'DM Serif Display', serif",
-              fontSize: "18px",
-              color: "#F4F4F5",
-            }}
-          >
+          <p style={{ fontFamily: "'DM Serif Display', serif", fontSize: "18px", color: "#1A1A1A" }}>
             Atelier Koffi &amp; Fils
           </p>
-          <p
-            style={{
-              fontFamily: "'DM Sans', sans-serif",
-              fontSize: "12px",
-              color: "rgba(244, 244, 245, 0.50)",
-              marginTop: "3px",
-            }}
-          >
+          <p style={{ fontFamily: "'DM Sans', sans-serif", fontSize: "12px", color: "rgba(26,26,26,0.5)", marginTop: "3px" }}>
             Reçu · RF-2024-0087
           </p>
         </div>
         <span
           style={{
-            background: "rgba(34, 197, 94, 0.12)",
-            border: "1px solid rgba(34, 197, 94, 0.28)",
-            color: "#4ade80",
+            background: "rgba(34, 197, 94, 0.1)",
+            border: "1px solid rgba(34, 197, 94, 0.3)",
+            color: "#16a34a",
             fontSize: "11px",
             fontFamily: "'DM Sans', sans-serif",
             fontWeight: 500,
@@ -146,73 +181,54 @@ function HeroVisualDocument() {
         >
           Réglé
         </span>
-      </div>
+      </motion.div>
 
-      {/* Progressive Line Items with Stagger */}
-      <div className="flex flex-col gap-3 py-5 border-b border-[#262626]">
+      {/* Lignes qui se "remplissent" toutes seules, effet machine à écrire */}
+      <div className="flex flex-col gap-3 py-5 border-b" style={{ borderColor: "#E5E1D8" }}>
         {lineItems.map((item, index) => (
           <motion.div
             key={item.label}
-            initial={{ opacity: 0, x: -10 }}
-            whileInView={{ opacity: 1, x: 0 }}
+            initial={{ clipPath: "inset(0 100% 0 0)" }}
+            whileInView={{ clipPath: "inset(0 0% 0 0)" }}
             viewport={{ once: true }}
-            transition={{
-              duration: 0.4,
-              delay: 0.25 + index * 0.15,
-              ease: "easeOut",
-            }}
+            transition={{ duration: 0.55, delay: 0.7 + index * 0.35, ease: "easeInOut" }}
             className="flex justify-between items-center text-[13.5px]"
           >
-            <span
-              style={{
-                fontFamily: "'DM Sans', sans-serif",
-                color: "rgba(244, 244, 245, 0.75)",
-              }}
-            >
+            <span style={{ fontFamily: "'DM Sans', sans-serif", color: "rgba(26,26,26,0.75)" }}>
               {item.label}
             </span>
-            <span
-              style={{
-                fontFamily: "'DM Sans', sans-serif",
-                color: "#F4F4F5",
-                fontWeight: 500,
-              }}
-            >
+            <span style={{ fontFamily: "'DM Sans', sans-serif", color: "#1A1A1A", fontWeight: 500 }}>
               {item.amount}
             </span>
           </motion.div>
         ))}
       </div>
 
-      {/* Total Section */}
-      <div className="flex justify-between items-center py-4 border-b border-[#262626]">
-        <span
-          style={{
-            fontFamily: "'DM Sans', sans-serif",
-            fontSize: "13px",
-            color: "rgba(244, 244, 245, 0.60)",
-          }}
-        >
+      {/* Total */}
+      <motion.div
+        initial={{ opacity: 0, y: 8 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.4, delay: 1.9 }}
+        className="flex justify-between items-center py-4 border-b"
+        style={{ borderColor: "#E5E1D8" }}
+      >
+        <span style={{ fontFamily: "'DM Sans', sans-serif", fontSize: "13px", color: "rgba(26,26,26,0.6)" }}>
           Total encaissé
         </span>
-        <span
-          style={{
-            fontFamily: "'DM Serif Display', serif",
-            fontSize: "22px",
-            color: "#D4AF37",
-          }}
-        >
+        <span style={{ fontFamily: "'DM Serif Display', serif", fontSize: "22px", color: "#B8860B" }}>
           28 000 FCFA
         </span>
-      </div>
+      </motion.div>
 
-      {/* Signature & Seal Assembly */}
+      {/* Signature (le stylo suit le tracé) + Cachet qui se pose */}
       <div className="grid grid-cols-2 gap-4 pt-5 items-center">
-        {/* Signature drawing animation */}
+        {/* Signature */}
         <div
           style={{
-            background: "rgba(12, 12, 12, 0.5)",
-            border: "1px dashed #262626",
+            position: "relative",
+            background: "rgba(0,0,0,0.02)",
+            border: "1px dashed #D8D2C4",
             borderRadius: "10px",
             padding: "12px",
             display: "flex",
@@ -222,44 +238,63 @@ function HeroVisualDocument() {
             minHeight: "84px",
           }}
         >
-          <svg
-            viewBox="0 0 160 48"
-            className="w-full h-9"
-            fill="none"
-            stroke="#D4AF37"
-            strokeWidth="2.2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            {/* Animated continuous pen stroke */}
-            <motion.path
-              d="M10,32 Q35,8 55,24 T95,18 Q120,40 145,20"
-              initial={{ pathLength: 0, opacity: 0 }}
-              whileInView={{ pathLength: 1, opacity: 1 }}
+          <div style={{ position: "relative", width: "100%", height: "36px" }}>
+            <svg
+              viewBox="0 0 160 48"
+              className="w-full h-9"
+              fill="none"
+              stroke="#1A1A1A"
+              strokeWidth="2.2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <motion.path
+                d="M10,32 Q35,8 55,24 T95,18 Q120,40 145,20"
+                initial={{ pathLength: 0, opacity: 0 }}
+                whileInView={{ pathLength: 1, opacity: 1 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.9, delay: 2.3, ease: "easeInOut" }}
+              />
+            </svg>
+
+            {/* Pointe du stylo qui trace la signature */}
+            <motion.div
+              initial={{ opacity: 0, left: penPath[0].left, top: penPath[0].top }}
+              whileInView={{
+                opacity: [0, 1, 1, 1, 1, 1, 0],
+                left: penPath.map((p) => p.left),
+                top: penPath.map((p) => p.top),
+              }}
               viewport={{ once: true }}
-              transition={{ duration: 0.85, delay: 0.75, ease: "easeInOut" }}
-            />
-          </svg>
-          <span
-            style={{
-              fontFamily: "'DM Sans', sans-serif",
-              fontSize: "10.5px",
-              color: "rgba(244, 244, 245, 0.40)",
-              marginTop: "4px",
-            }}
-          >
+              transition={{ duration: 0.95, delay: 2.3, ease: "easeInOut" }}
+              style={{
+                position: "absolute",
+                width: "10px",
+                height: "10px",
+                marginLeft: "-2px",
+                marginTop: "-8px",
+                pointerEvents: "none",
+              }}
+            >
+              <svg viewBox="0 0 24 24" width="16" height="16" style={{ transform: "rotate(-45deg)" }}>
+                <path d="M2 22l3-8 12-12 5 5-12 12-8 3z" fill="#1A1A1A" />
+                <path d="M14 5l5 5" stroke="#D4AF37" strokeWidth="1.5" />
+              </svg>
+            </motion.div>
+          </div>
+          <span style={{ fontFamily: "'DM Sans', sans-serif", fontSize: "10.5px", color: "rgba(26,26,26,0.4)", marginTop: "4px" }}>
             Signature client
           </span>
         </div>
 
-        {/* Falling Stamp with scale impact and ink halo */}
+        {/* Cachet qui tombe et se pose */}
         <div className="relative flex flex-col items-center justify-center">
-          {/* Radial Ink Flash Halo */}
+          {/* Halo d'encre au moment de l'impact */}
           <motion.div
             initial={{ scale: 0.6, opacity: 0 }}
             whileInView={{ scale: 1.3, opacity: [0, 0.35, 0] }}
             viewport={{ once: true }}
-            transition={{ duration: 0.6, delay: 1.25, ease: "easeOut" }}
+            transition={{ duration: 0.6, delay: 3.35, ease: "easeOut" }}
             style={{
               position: "absolute",
               width: "80px",
@@ -269,13 +304,12 @@ function HeroVisualDocument() {
               pointerEvents: "none",
             }}
           />
-
-          {/* Stamp Seal Impact */}
+          {/* Cachet : chute + rebond léger à l'atterrissage */}
           <motion.div
-            initial={{ scale: 1.25, opacity: 0 }}
-            whileInView={{ scale: 1, opacity: 1 }}
+            initial={{ y: -60, scale: 1.15, opacity: 0, rotate: -18 }}
+            whileInView={{ y: 0, scale: 1, opacity: 1, rotate: -6 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.35, delay: 1.2, ease: "easeOut" }}
+            transition={{ duration: 0.55, delay: 3.3, type: "spring", stiffness: 260, damping: 14 }}
             style={{
               width: "74px",
               height: "74px",
@@ -285,42 +319,17 @@ function HeroVisualDocument() {
               flexDirection: "column",
               alignItems: "center",
               justifyContent: "center",
-              background: "rgba(212, 175, 55, 0.08)",
-              transform: "rotate(-6deg)",
+              background: "rgba(212, 175, 55, 0.1)",
             }}
           >
-            <span
-              style={{
-                fontFamily: "'DM Serif Display', serif",
-                fontSize: "8.5px",
-                color: "#D4AF37",
-                letterSpacing: "0.08em",
-                textTransform: "uppercase",
-              }}
-            >
+            <span style={{ fontFamily: "'DM Serif Display', serif", fontSize: "8.5px", color: "#B8860B", letterSpacing: "0.08em", textTransform: "uppercase" }}>
               Atelier Koffi
             </span>
-            <span
-              style={{
-                fontFamily: "'DM Sans', sans-serif",
-                fontSize: "7px",
-                color: "rgba(212,175,55,0.7)",
-                letterSpacing: "0.1em",
-                textTransform: "uppercase",
-                marginTop: "1px",
-              }}
-            >
+            <span style={{ fontFamily: "'DM Sans', sans-serif", fontSize: "7px", color: "rgba(184,134,11,0.8)", letterSpacing: "0.1em", textTransform: "uppercase", marginTop: "1px" }}>
               ★ Certifié ★
             </span>
           </motion.div>
-          <span
-            style={{
-              fontFamily: "'DM Sans', sans-serif",
-              fontSize: "10.5px",
-              color: "rgba(244, 244, 245, 0.40)",
-              marginTop: "6px",
-            }}
-          >
+          <span style={{ fontFamily: "'DM Sans', sans-serif", fontSize: "10.5px", color: "rgba(26,26,26,0.4)", marginTop: "6px" }}>
             Cachet officiel
           </span>
         </div>
@@ -331,6 +340,9 @@ function HeroVisualDocument() {
 
 // ─── Main Hero Section ───────────────────────────────────────────────────────
 export default function Hero() {
+  const [beamsReady, setBeamsReady] = useState(false);
+  const heavyAnimationAllowed = useHeavyAnimationAllowed();
+
   return (
     <section
       style={{
@@ -358,30 +370,53 @@ export default function Hero() {
         }}
       />
 
-      {/* Beams background (behind hero only) with smooth CSS fade-in */}
-      <div
-        style={{
-          position: "absolute",
-          inset: 0,
-          zIndex: 1,
-          opacity: 0.35,
-          pointerEvents: "none",
-          transition: "opacity 0.8s ease-in",
-        }}
-      >
-        <Beams
-          beamWidth={2}
-          beamHeight={20}
-          beamNumber={10}
-          lightColor="#D4AF37"
-          beamColor="#3a2800"
-          backgroundColor="#0C0C0C"
-          speed={1.0}
-          noiseIntensity={1.2}
-          scale={0.18}
-          rotation={0}
+      {/* Beams background (desktop only) OU fallback CSS léger (mobile / reduced-motion) */}
+      {heavyAnimationAllowed ? (
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            zIndex: 1,
+            opacity: beamsReady ? 0.35 : 0,
+            pointerEvents: "none",
+            transition: "opacity 1s ease-in",
+          }}
+        >
+          <Beams
+            beamWidth={2}
+            beamHeight={20}
+            beamNumber={10}
+            lightColor="#D4AF37"
+            beamColor="#3a2800"
+            backgroundColor="#0C0C0C"
+            speed={1.0}
+            noiseIntensity={1.2}
+            scale={0.18}
+            rotation={0}
+            onReady={() => setBeamsReady(true)}
+          />
+        </div>
+      ) : (
+        <div
+          aria-hidden="true"
+          style={{
+            position: "absolute",
+            inset: 0,
+            zIndex: 1,
+            opacity: 0.35,
+            pointerEvents: "none",
+            background:
+              "radial-gradient(ellipse 70% 50% at 30% 30%, rgba(212,175,55,0.10) 0%, transparent 70%), radial-gradient(ellipse 60% 45% at 75% 65%, rgba(212,175,55,0.07) 0%, transparent 70%)",
+            animation: "hero-fallback-drift 14s ease-in-out infinite alternate",
+          }}
         />
-      </div>
+      )}
+      <style>{`
+        @keyframes hero-fallback-drift {
+          0% { transform: scale(1) translate(0, 0); }
+          100% { transform: scale(1.08) translate(2%, -2%); }
+        }
+      `}</style>
 
       {/* Radial overlay to preserve perfect text contrast */}
       <div
@@ -458,7 +493,7 @@ export default function Hero() {
         <div className="flex flex-col items-center gap-3">
           <motion.div whileHover={{ y: -1 }} transition={{ duration: 0.15 }}>
             <Link
-              href="/login"
+              href="/login?tab=register"
               style={{
                 display: "inline-flex",
                 alignItems: "center",

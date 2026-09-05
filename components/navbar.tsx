@@ -18,10 +18,10 @@ export default function NavBar() {
   }
 
   const navLinks = [
-    { label: "Produit", href: "/#produit" },
-    { label: "Pricing", href: "/#pricing" },
+    { label: "Fonctionnalités", href: "/#produit" },
+    { label: "Tarifs", href: "/#pricing" },
     { label: "FAQ", href: "/#faq" },
-    { label: "Login", href: "/login" },
+    { label: "Connexion", href: "/login?tab=login" },
   ];
 
   return (
@@ -118,7 +118,7 @@ export default function NavBar() {
             {/* CTA — desktop */}
             <motion.div whileHover={{ y: -1 }} transition={{ duration: 0.15 }}>
               <Link
-                href="/login"
+                href="/login?tab=register"
                 className="hidden md:flex items-center"
                 style={{
                   fontFamily: "'DM Sans', sans-serif",
@@ -212,7 +212,7 @@ export default function NavBar() {
             ))}
             <div style={{ padding: "8px 6px 2px" }}>
               <Link
-                href="/login"
+                href="/login?tab=register"
                 onClick={() => setIsMenuOpen(false)}
                 style={{
                   display: "block",

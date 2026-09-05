@@ -189,7 +189,7 @@ export default function SettingsStamp() {
               style={{
                 width: "100%",
                 height: "44px",
-                background: "#0C0C0C",
+                background: "#000000",
                 border: "1px solid #262626",
                 borderRadius: "10px",
                 padding: "0 14px",
@@ -211,7 +211,7 @@ export default function SettingsStamp() {
               style={{
                 width: "100%",
                 height: "44px",
-                background: "#0C0C0C",
+                background: "#000000",
                 border: "1px solid #262626",
                 borderRadius: "10px",
                 padding: "0 14px",
@@ -233,7 +233,7 @@ export default function SettingsStamp() {
               style={{
                 width: "100%",
                 height: "44px",
-                background: "#0C0C0C",
+                background: "#000000",
                 border: "1px solid #262626",
                 borderRadius: "10px",
                 padding: "0 14px",
@@ -255,7 +255,7 @@ export default function SettingsStamp() {
               style={{
                 width: "100%",
                 height: "44px",
-                background: "#0C0C0C",
+                background: "#000000",
                 border: "1px solid #262626",
                 borderRadius: "10px",
                 padding: "0 14px",
@@ -271,7 +271,7 @@ export default function SettingsStamp() {
               type="submit"
               style={{
                 background: "#D4AF37",
-                color: "#0C0C0C",
+                color: "#000000",
                 border: "none",
                 borderRadius: "10px",
                 padding: "10px 20px",
@@ -319,7 +319,7 @@ export default function SettingsStamp() {
               padding: "28px 16px",
               textAlign: "center",
               cursor: "pointer",
-              background: "#0C0C0C",
+              background: "#000000",
               transition: "border-color 0.2s",
             }}
           >
@@ -343,7 +343,7 @@ export default function SettingsStamp() {
           <div
             style={{
               height: "150px",
-              background: "#0C0C0C",
+              background: "#000000",
               border: "1px solid #262626",
               borderRadius: "14px",
               display: "flex",
@@ -417,7 +417,7 @@ export default function SettingsStamp() {
         {/* Signature Canvas Pad */}
         <div
           style={{
-            background: "#0C0C0C",
+            background: "#000000",
             border: "1px solid #262626",
             borderRadius: "14px",
             overflow: "hidden",
