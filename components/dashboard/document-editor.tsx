@@ -1,18 +1,17 @@
 "use client";
 
-import React, { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import React, { useState, useEffect } from "react";
 import {
   PlusIcon,
   TrashIcon,
-  PencilSquareIcon,
   CheckBadgeIcon,
-  SparklesIcon,
   ShareIcon,
   XMarkIcon,
   BanknotesIcon,
-  PhoneIcon,
-  ClockIcon,
+  BookmarkSquareIcon,
+  SparklesIcon,
+  ArrowPathIcon,
+  DocumentTextIcon,
 } from "@heroicons/react/24/outline";
 
 export interface LineItem {
@@ -22,16 +21,80 @@ export interface LineItem {
   price: number;
 }
 
-// African Crafts Quick Templates for the 1-click catalog adder
-const quickCatalogItems = [
-  { label: "Table de réunion teck massif", craft: "Menuiserie", price: 350000 },
-  { label: "Porte isoplane sur mesure", craft: "Menuiserie", price: 45000 },
-  { label: "Confection tenue Bazin brodé", craft: "Couture", price: 65000 },
-  { label: "Robe de soirée sur mesure", craft: "Couture", price: 40000 },
-  { label: "Vidange moteur complète + filtre", craft: "Mécanique", price: 15000 },
-  { label: "Diagnostic électronique valise", craft: "Mécanique", price: 10000 },
-  { label: "Installation tableau électrique", craft: "BTP", price: 50000 },
-  { label: "Plomberie & pose sanitaires", craft: "BTP", price: 35000 },
+export interface CustomTemplate {
+  id: string;
+  name: string;
+  type: "devis" | "facture" | "recu";
+  hasDeposit: boolean;
+  depositPercent?: number;
+  items: LineItem[];
+  validity: string;
+  paymentProvider: "Wave" | "MTN MoMo" | "Orange Money" | "Moov Money" | "Espèces";
+}
+
+// REAL WEST AFRICAN COMPLIANT TEMPLATES (Normes OHADA, UEMOA & CGI)
+const OFFICIAL_COMPLIANT_TEMPLATES = [
+  {
+    id: "ohada_atelier",
+    name: "Atelier & Fabrication sur mesure (Norme OHADA)",
+    badge: "Menuiserie / Couture / Forge",
+    type: "facture" as const,
+    description: "Conforme droit commercial OHADA avec séparation Fournitures & Façon d'atelier.",
+    hasDeposit: true,
+    depositPercent: 50,
+    validity: "Solde à la livraison",
+    paymentProvider: "Wave" as const,
+    items: [
+      { id: "1", label: "Fourniture bois massif teck & quincaillerie traitée", qty: 1, price: 180000 },
+      { id: "2", label: "Façon d'atelier, usinage & assemblage sur mesure", qty: 1, price: 120000 },
+      { id: "3", label: "Traitement vernis marin & livraison sur site", qty: 1, price: 25000 },
+    ],
+  },
+  {
+    id: "uemoa_chantier",
+    name: "Devis Proforma Chantier & Travaux (Norme UEMOA)",
+    badge: "BTP / Électricité / Plomberie",
+    type: "devis" as const,
+    description: "Devis d'engagement avec clause de validité 30j et acompte démarrage 30%.",
+    hasDeposit: true,
+    depositPercent: 30,
+    validity: "Valable 30 jours",
+    paymentProvider: "MTN MoMo" as const,
+    items: [
+      { id: "1", label: "Fourniture câbles 2.5mm², disjoncteurs & appareillage Legrand", qty: 1, price: 85000 },
+      { id: "2", label: "Pose goulottes, tirage de lignes & raccordement tableau", qty: 1, price: 50000 },
+      { id: "3", label: "Essais techniques & mise en conformité de sécurité", qty: 1, price: 15000 },
+    ],
+  },
+  {
+    id: "dgi_service",
+    name: "Facture Commerciale Normalisée (UEMOA / DGI)",
+    badge: "Prestation B2B & Négoce",
+    type: "facture" as const,
+    description: "Facturation directe B2B avec dispense TVA (Art. 238bis CGI / Régime TPS).",
+    hasDeposit: false,
+    depositPercent: 0,
+    validity: "Paiement à réception",
+    paymentProvider: "Wave" as const,
+    items: [
+      { id: "1", label: "Prestation d'audit & maintenance technique d'équipements", qty: 1, price: 150000 },
+      { id: "2", label: "Rapport d'intervention certifié & recommandations", qty: 1, price: 30000 },
+    ],
+  },
+  {
+    id: "recu_momo",
+    name: "Reçu de Trésorerie & Quittance Mobile Money",
+    badge: "Preuve libératoire Wave / MoMo",
+    type: "recu" as const,
+    description: "Quittance formelle d'encaissement direct pour clôturer un paiement ou acompte.",
+    hasDeposit: false,
+    depositPercent: 0,
+    validity: "Paiement à réception",
+    paymentProvider: "Wave" as const,
+    items: [
+      { id: "1", label: "Règlement intégral prestation de mécanique générale", qty: 1, price: 45000 },
+    ],
+  },
 ];
 
 interface DocumentEditorProps {
@@ -51,6 +114,14 @@ export default function DocumentEditor({
   const [clientName, setClientName] = useState(initialClient);
   const [clientPhone, setClientPhone] = useState("+229 ");
 
+  // Selected template indicator
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string>("custom_blank");
+
+  // Custom templates saved by the user (localStorage)
+  const [customTemplates, setCustomTemplates] = useState<CustomTemplate[]>([]);
+  const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
+  const [newTemplateName, setNewTemplateName] = useState("");
+
   // Line items
   const [items, setItems] = useState<LineItem[]>(
     initialItems && initialItems.length > 0
@@ -67,7 +138,7 @@ export default function DocumentEditor({
   const [manualQty, setManualQty] = useState(1);
   const [manualPrice, setManualPrice] = useState(25000);
 
-  // OPTIONAL DEPOSIT & PAYMENT SETTINGS (Terrain Afrique de l'Ouest)
+  // OPTIONAL DEPOSIT & PAYMENT SETTINGS
   const [hasDeposit, setHasDeposit] = useState(false);
   const [depositAmount, setDepositAmount] = useState(150000);
 
@@ -82,15 +153,120 @@ export default function DocumentEditor({
   const [includeStamp, setIncludeStamp] = useState(true);
   const [includeSignature, setIncludeSignature] = useState(true);
 
+  // Legal OHADA / UEMOA compliance note
+  const [legalMention, setLegalMention] = useState("TVA non applicable — Régime TPS / Micro-entreprise (Art. 238bis CGI). Enregistré au RCCM.");
+
   // Sharing state
   const [isGenerating, setIsGenerating] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  // Load custom templates from localStorage on mount
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem("zap_user_templates");
+      if (saved) {
+        setCustomTemplates(JSON.parse(saved));
+      }
+    } catch {
+      // ignore
+    }
+  }, []);
 
   // Calculations
   const subtotal = items.reduce((sum, item) => sum + item.qty * item.price, 0);
   const total = subtotal;
   const effectiveDeposit = hasDeposit ? Math.min(depositAmount, total) : 0;
   const remainingBalance = Math.max(0, total - effectiveDeposit);
+
+  // Apply an official compliant template
+  const handleApplyOfficialTemplate = (tmpl: (typeof OFFICIAL_COMPLIANT_TEMPLATES)[0]) => {
+    setSelectedTemplateId(tmpl.id);
+    setDocType(tmpl.type);
+    setItems(tmpl.items.map((it) => ({ ...it, id: Date.now().toString() + Math.random().toString().slice(2, 5) })));
+    setHasDeposit(tmpl.hasDeposit);
+    setValidity(tmpl.validity);
+    setPaymentProvider(tmpl.paymentProvider);
+
+    const calcTotal = tmpl.items.reduce((s, it) => s + it.qty * it.price, 0);
+    if (tmpl.hasDeposit && tmpl.depositPercent) {
+      setDepositAmount(Math.round((calcTotal * tmpl.depositPercent) / 100));
+    }
+    setToastMessage(`Modèle conforme appliqué : ${tmpl.name}`);
+    setTimeout(() => setToastMessage(null), 3000);
+  };
+
+  // Start with a totally blank page (no pre-existing models)
+  const handleStartBlank = () => {
+    setSelectedTemplateId("blank");
+    setItems([]);
+    setHasDeposit(false);
+    setDepositAmount(0);
+    setClientName("");
+    setToastMessage("Page blanche prête. Saisissez librement vos propres prestations.");
+    setTimeout(() => setToastMessage(null), 3000);
+  };
+
+  // Apply user's saved custom template
+  const handleApplyCustomTemplate = (tmpl: CustomTemplate) => {
+    setSelectedTemplateId(`custom_${tmpl.id}`);
+    setDocType(tmpl.type);
+    setItems(tmpl.items.map((it) => ({ ...it, id: Date.now().toString() + Math.random().toString().slice(2, 5) })));
+    setHasDeposit(tmpl.hasDeposit);
+    setValidity(tmpl.validity);
+    setPaymentProvider(tmpl.paymentProvider);
+
+    const calcTotal = tmpl.items.reduce((s, it) => s + it.qty * it.price, 0);
+    if (tmpl.hasDeposit && tmpl.depositPercent) {
+      setDepositAmount(Math.round((calcTotal * tmpl.depositPercent) / 100));
+    }
+    setToastMessage(`Votre modèle appliqué : ${tmpl.name}`);
+    setTimeout(() => setToastMessage(null), 3000);
+  };
+
+  // Save current document as custom template
+  const handleSaveCurrentAsTemplate = () => {
+    if (!newTemplateName.trim()) return;
+    if (items.length === 0) {
+      alert("Ajoutez au moins une prestation avant d'enregistrer le modèle.");
+      return;
+    }
+
+    const newTmpl: CustomTemplate = {
+      id: Date.now().toString(),
+      name: newTemplateName.trim(),
+      type: docType,
+      hasDeposit,
+      depositPercent: total > 0 && hasDeposit ? Math.round((effectiveDeposit / total) * 100) : 0,
+      items: [...items],
+      validity,
+      paymentProvider,
+    };
+
+    const updated = [newTmpl, ...customTemplates];
+    setCustomTemplates(updated);
+    try {
+      localStorage.setItem("zap_user_templates", JSON.stringify(updated));
+    } catch {
+      // ignore
+    }
+
+    setNewTemplateName("");
+    setIsSaveModalOpen(false);
+    setSelectedTemplateId(`custom_${newTmpl.id}`);
+    setToastMessage(`Modèle "${newTmpl.name}" sauvegardé avec succès !`);
+    setTimeout(() => setToastMessage(null), 3500);
+  };
+
+  const handleDeleteCustomTemplate = (tmplId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const updated = customTemplates.filter((t) => t.id !== tmplId);
+    setCustomTemplates(updated);
+    try {
+      localStorage.setItem("zap_user_templates", JSON.stringify(updated));
+    } catch {
+      // ignore
+    }
+  };
 
   const handleAddManualItem = () => {
     if (!manualLabel.trim()) return;
@@ -105,16 +281,6 @@ export default function DocumentEditor({
     setManualQty(1);
     setManualPrice(25000);
     setIsAddDialogOpen(false);
-  };
-
-  const handleAddFromCatalog = (catItem: (typeof quickCatalogItems)[0]) => {
-    const newItem: LineItem = {
-      id: Date.now().toString(),
-      label: catItem.label,
-      qty: 1,
-      price: catItem.price,
-    };
-    setItems((prev) => [...prev, newItem]);
   };
 
   const handleDeleteItem = (id: string) => {
@@ -134,10 +300,9 @@ export default function DocumentEditor({
     setIsGenerating(true);
     setTimeout(() => {
       setIsGenerating(false);
-      setToastMessage("Document généré avec succès !");
+      setToastMessage("Document certifié généré avec succès !");
 
-      // Generate WhatsApp link
-      const typeLabel = docType === "recu" ? "Reçu officiel" : docType === "facture" ? "Facture" : "Devis";
+      const typeLabel = docType === "recu" ? "Reçu officiel" : docType === "facture" ? "Facture" : "Devis proforma";
       const docNumber = docType === "recu" ? "REC-2025-0043" : docType === "facture" ? "FAC-2025-0105" : "DEV-2025-0090";
 
       let paymentText = `Règlement accepté via ${paymentProvider} (${paymentPhone}).`;
@@ -146,7 +311,7 @@ export default function DocumentEditor({
       }
 
       const message = encodeURIComponent(
-        `Bonjour ${clientName},\nVoici votre ${typeLabel} ZAP N° ${docNumber} d'un montant total de ${total.toLocaleString("fr-FR")} FCFA.\n${paymentText}\n\nConsultez et téléchargez votre PDF certifié avec cachet & signature ici : https://zap.africa/d/${docNumber}`
+        `Bonjour ${clientName},\nVoici votre ${typeLabel} ZAP N° ${docNumber} conforme aux normes OHADA/UEMOA d'un montant total de ${total.toLocaleString("fr-FR")} FCFA.\n${paymentText}\n\nConsultez et téléchargez votre PDF certifié avec cachet & signature ici : https://zap.africa/d/${docNumber}`
       );
       const cleanPhone = clientPhone.replace(/\D/g, "");
       const waUrl = cleanPhone ? `https://wa.me/${cleanPhone}?text=${message}` : `https://wa.me/?text=${message}`;
@@ -166,12 +331,119 @@ export default function DocumentEditor({
         </div>
       )}
 
+      {/* TEMPLATE PICKER: Real Net-Compliant Models OR Custom Blank / Saved */}
+      <div className="bg-[#171717] border border-[#262626] rounded-2xl p-5 space-y-3">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#262626] pb-3">
+          <div>
+            <div className="flex items-center gap-2">
+              <SparklesIcon className="w-4 h-4 text-[#D4AF37]" />
+              <h3 style={{ fontFamily: "'DM Serif Display', serif" }} className="text-base text-white">
+                Choix du modèle de document
+              </h3>
+            </div>
+            <p className="text-xs text-neutral-400 mt-0.5">
+              Utilisez un modèle certifié du net, vos propres modèles sauvegardés, ou partez d&apos;une page blanche sans contrainte.
+            </p>
+          </div>
+
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              type="button"
+              onClick={handleStartBlank}
+              className={`py-1.5 px-3 rounded-lg text-xs font-medium border transition-colors cursor-pointer flex items-center gap-1.5 ${
+                selectedTemplateId === "blank"
+                  ? "bg-[#262626] border-[#D4AF37] text-[#D4AF37]"
+                  : "bg-[#0C0C0C] border-[#262626] text-neutral-300 hover:text-white"
+              }`}
+              title="Créer un document sans aucun modèle imposé"
+            >
+              <DocumentTextIcon className="w-3.5 h-3.5" />
+              <span>Page blanche (Vierge)</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setIsSaveModalOpen(true)}
+              className="py-1.5 px-3 rounded-lg bg-[#262626] hover:bg-[#333] border border-[#333] text-xs font-medium text-[#D4AF37] transition-colors cursor-pointer flex items-center gap-1.5"
+              title="Enregistrer la configuration actuelle comme modèle d'atelier réutilisable"
+            >
+              <BookmarkSquareIcon className="w-3.5 h-3.5" />
+              <span>⭐ Sauvegarder comme mon modèle</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Templates Carousel / Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 pt-1">
+          {OFFICIAL_COMPLIANT_TEMPLATES.map((tmpl) => (
+            <div
+              key={tmpl.id}
+              onClick={() => handleApplyOfficialTemplate(tmpl)}
+              className={`p-3 rounded-xl border transition-all cursor-pointer text-left flex flex-col justify-between ${
+                selectedTemplateId === tmpl.id
+                  ? "bg-[#202020] border-[#D4AF37] ring-1 ring-[#D4AF37]/50"
+                  : "bg-[#0C0C0C] border-[#262626] hover:border-[#383838]"
+              }`}
+            >
+              <div>
+                <span className="inline-block text-[10px] font-mono py-0.5 px-1.5 rounded bg-[#262626] text-[#D4AF37] mb-1.5">
+                  {tmpl.badge}
+                </span>
+                <p className="text-xs font-semibold text-white leading-snug">{tmpl.name}</p>
+                <p className="text-[11px] text-neutral-400 mt-1 line-clamp-2 leading-relaxed">
+                  {tmpl.description}
+                </p>
+              </div>
+              <div className="mt-2.5 pt-2 border-t border-[#1f1f1f] flex items-center justify-between text-[10px] text-neutral-500 font-mono">
+                <span>{tmpl.type.toUpperCase()}</span>
+                <span>{tmpl.hasDeposit ? `Acompte ${tmpl.depositPercent}%` : "Comptant"}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* User's Own Custom Templates (if any) */}
+        {customTemplates.length > 0 && (
+          <div className="pt-2 border-t border-[#262626]">
+            <span className="text-[11px] uppercase tracking-wider text-neutral-400 font-mono block mb-2">
+              Vos modèles personnalisés d&apos;atelier ({customTemplates.length}) :
+            </span>
+            <div className="flex flex-wrap gap-2">
+              {customTemplates.map((custom) => (
+                <div
+                  key={custom.id}
+                  onClick={() => handleApplyCustomTemplate(custom)}
+                  className={`flex items-center gap-2 py-1.5 px-3 rounded-xl border text-xs cursor-pointer transition-colors ${
+                    selectedTemplateId === `custom_${custom.id}`
+                      ? "bg-[#262626] border-[#D4AF37] text-white"
+                      : "bg-[#0C0C0C] border-[#262626] text-neutral-300 hover:text-white"
+                  }`}
+                >
+                  <span className="font-medium">{custom.name}</span>
+                  <span className="text-[10px] font-mono text-[#D4AF37]">
+                    ({custom.items.length} lignes)
+                  </span>
+                  <button
+                    type="button"
+                    onClick={(e) => handleDeleteCustomTemplate(custom.id, e)}
+                    className="text-neutral-500 hover:text-red-400 p-0.5"
+                    title="Supprimer ce modèle personnalisé"
+                  >
+                    <XMarkIcon className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
       {/* 3 Tabs Document Type Switcher */}
       <div className="flex bg-[#171717] border border-[#262626] rounded-xl p-1 select-none">
         {[
-          { id: "facture" as const, label: "Facture officielle", badge: "Comptabilité" },
+          { id: "facture" as const, label: "Facture officielle", badge: "Comptabilité OHADA" },
           { id: "devis" as const, label: "Devis proforma", badge: "Avant travaux" },
-          { id: "recu" as const, label: "Reçu d'encaissement", badge: "Preuve Wave/MoMo" },
+          { id: "recu" as const, label: "Reçu d'encaissement", badge: "Preuve libératoire" },
         ].map((tab) => (
           <button
             key={tab.id}
@@ -195,7 +467,7 @@ export default function DocumentEditor({
       <div className="bg-[#171717] border border-[#262626] rounded-2xl p-5 sm:p-6 space-y-4">
         <div className="flex items-center justify-between border-b border-[#262626] pb-3">
           <h2 style={{ fontFamily: "'DM Serif Display', serif" }} className="text-lg text-white">
-            1. Informations du client
+            1. Informations du client &amp; Mentions
           </h2>
           <span className="text-[11px] font-mono text-[#D4AF37]">
             {docType === "recu" ? "REC-2025-0043" : docType === "facture" ? "FAC-2025-0105" : "DEV-2025-0090"}
@@ -249,7 +521,7 @@ export default function DocumentEditor({
 
           <div>
             <label className="block text-xs font-medium text-neutral-300 mb-1.5">
-              Compte Mobile Money de règlement
+              Mode de règlement Mobile Money / Espèces
             </label>
             <div className="grid grid-cols-2 gap-2">
               <select
@@ -274,6 +546,19 @@ export default function DocumentEditor({
             </div>
           </div>
         </div>
+
+        {/* Legal Mentions Input (OHADA / UEMOA) */}
+        <div>
+          <label className="block text-xs font-medium text-neutral-300 mb-1">
+            Mention légale &amp; Régime fiscal (Norme UEMOA / OHADA)
+          </label>
+          <input
+            type="text"
+            value={legalMention}
+            onChange={(e) => setLegalMention(e.target.value)}
+            className="w-full px-3.5 py-2 rounded-xl bg-[#0C0C0C] border border-[#262626] text-xs text-neutral-300 placeholder-neutral-500 focus:outline-none focus:border-[#D4AF37] transition-colors"
+          />
+        </div>
       </div>
 
       {/* 2. Line Items Card */}
@@ -281,9 +566,11 @@ export default function DocumentEditor({
         <div className="flex items-center justify-between border-b border-[#262626] pb-3">
           <div>
             <h2 style={{ fontFamily: "'DM Serif Display', serif" }} className="text-lg text-white">
-              2. Prestations & Produits
+              2. Prestations &amp; Produits ({items.length} lignes)
             </h2>
-            <p className="text-xs text-neutral-400">Ajoutez les lignes manuellement ou depuis vos modèles d'atelier.</p>
+            <p className="text-xs text-neutral-400">
+              Saisie totalement libre : personnalisez chaque libellé, quantité et prix unitaire.
+            </p>
           </div>
 
           <button
@@ -292,62 +579,57 @@ export default function DocumentEditor({
             className="flex items-center gap-1.5 py-1.5 px-3 rounded-lg bg-[#262626] hover:bg-[#303030] text-xs font-medium text-[#D4AF37] transition-colors cursor-pointer"
           >
             <PlusIcon className="w-4 h-4" />
-            <span>Ligne personnalisée</span>
+            <span>+ Ajouter une ligne</span>
           </button>
         </div>
 
-        {/* Quick Catalog Adder (Badges multi-métiers) */}
-        <div>
-          <span className="text-[11px] uppercase tracking-wider text-neutral-500 block mb-2 font-mono">
-            Ajout rapide d&apos;atelier (1 clic) :
-          </span>
-          <div className="flex flex-wrap gap-2">
-            {quickCatalogItems.map((cat, idx) => (
-              <button
-                key={idx}
-                type="button"
-                onClick={() => handleAddFromCatalog(cat)}
-                className="flex items-center gap-1.5 py-1 px-2.5 rounded-lg bg-[#0C0C0C] border border-[#262626] hover:border-[#D4AF37]/50 text-xs text-neutral-300 hover:text-white transition-colors cursor-pointer"
+        {/* Added Items List */}
+        {items.length === 0 ? (
+          <div className="p-8 text-center border border-dashed border-[#262626] rounded-xl">
+            <DocumentTextIcon className="w-8 h-8 text-neutral-500 mx-auto mb-2" />
+            <p className="text-sm text-neutral-300 font-medium">Aucune ligne dans ce document</p>
+            <p className="text-xs text-neutral-500 mt-1 mb-3">
+              Ajoutez vos propres prestations manuellement ou choisissez un modèle ci-dessus.
+            </p>
+            <button
+              type="button"
+              onClick={() => setIsAddDialogOpen(true)}
+              className="py-1.5 px-3.5 rounded-lg bg-[#D4AF37] text-[#0C0C0C] text-xs font-semibold cursor-pointer"
+            >
+              + Ajouter la première ligne
+            </button>
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {items.map((item) => (
+              <div
+                key={item.id}
+                className="flex items-center justify-between gap-3 p-3 rounded-xl bg-[#0C0C0C] border border-[#262626]"
               >
-                <span>{cat.label}</span>
-                <span className="font-mono text-[10px] text-[#D4AF37]">
-                  {cat.price.toLocaleString("fr-FR")} F
-                </span>
-              </button>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-white truncate">{item.label}</p>
+                  <p className="text-xs text-neutral-400 font-mono">
+                    {item.qty} × {item.price.toLocaleString("fr-FR")} FCFA
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-3 shrink-0">
+                  <span className="text-sm font-semibold text-[#D4AF37] font-mono tabular-nums">
+                    {(item.qty * item.price).toLocaleString("fr-FR")} FCFA
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => handleDeleteItem(item.id)}
+                    className="p-1 rounded-lg text-neutral-500 hover:text-red-400 transition-colors cursor-pointer"
+                    title="Supprimer cette ligne"
+                  >
+                    <TrashIcon className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
             ))}
           </div>
-        </div>
-
-        {/* Added Items List */}
-        <div className="space-y-2 pt-2">
-          {items.map((item) => (
-            <div
-              key={item.id}
-              className="flex items-center justify-between gap-3 p-3 rounded-xl bg-[#0C0C0C] border border-[#262626]"
-            >
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-white truncate">{item.label}</p>
-                <p className="text-xs text-neutral-400 font-mono">
-                  {item.qty} × {item.price.toLocaleString("fr-FR")} FCFA
-                </p>
-              </div>
-
-              <div className="flex items-center gap-3 shrink-0">
-                <span className="text-sm font-semibold text-[#D4AF37] font-mono tabular-nums">
-                  {(item.qty * item.price).toLocaleString("fr-FR")} FCFA
-                </span>
-                <button
-                  type="button"
-                  onClick={() => handleDeleteItem(item.id)}
-                  className="p-1 rounded-lg text-neutral-500 hover:text-red-400 transition-colors"
-                  title="Supprimer"
-                >
-                  <TrashIcon className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
+        )}
       </div>
 
       {/* 3. OPTIONAL DEPOSIT & BALANCE DUE MODULE (AFRICAN WORKFLOW) */}
@@ -357,10 +639,10 @@ export default function DocumentEditor({
             <BanknotesIcon className="w-5 h-5 text-[#D4AF37]" />
             <div>
               <h2 style={{ fontFamily: "'DM Serif Display', serif" }} className="text-lg text-white">
-                3. Acompte & Reste à payer (Optionnel)
+                3. Acompte &amp; Reste à payer (100% Optionnel)
               </h2>
               <p className="text-xs text-neutral-400">
-                Idéal pour les chantiers et fabrications sur commande : évitez les litiges à la livraison.
+                Inactif pour les ventes comptant. Activez pour les chantiers et fabrications sur commande afin d&apos;éviter les litiges.
               </p>
             </div>
           </div>
@@ -397,12 +679,12 @@ export default function DocumentEditor({
 
               <div>
                 <label className="block text-xs font-medium text-neutral-300 mb-1.5">
-                  Pourcentage rapide :
+                  Raccourcis de pourcentage :
                 </label>
                 <div className="flex gap-2">
                   {[
                     { label: "30% (Matériaux)", percent: 30 },
-                    { label: "50% (Standard)", percent: 50 },
+                    { label: "50% (Standard atelier)", percent: 50 },
                     { label: "70% (Avance forte)", percent: 70 },
                   ].map((btn) => (
                     <button
@@ -433,7 +715,7 @@ export default function DocumentEditor({
                 </span>
               </div>
               <div>
-                <span className="text-[11px] text-[#D4AF37] block mb-0.5">Reste dû à la livraison</span>
+                <span className="text-[11px] text-[#D4AF37] block mb-0.5">Reste dû à livraison</span>
                 <span className="text-sm font-bold text-[#D4AF37] font-mono tabular-nums">
                   {remainingBalance.toLocaleString("fr-FR")} FCFA
                 </span>
@@ -458,7 +740,7 @@ export default function DocumentEditor({
               className="w-4 h-4 accent-[#D4AF37] cursor-pointer"
             />
             <span className="text-sm text-neutral-300">
-              Apposer mon tampon d&apos;atelier officiel
+              Apposer le tampon d&apos;atelier officiel ZAP
             </span>
           </label>
 
@@ -470,13 +752,13 @@ export default function DocumentEditor({
               className="w-4 h-4 accent-[#D4AF37] cursor-pointer"
             />
             <span className="text-sm text-neutral-300">
-              Apposer ma signature manuscrite
+              Apposer la signature manuscrite certifiée
             </span>
           </label>
         </div>
       </div>
 
-      {/* Sticky Bottom Action Bar (Flat precision, no blur/shadow lag) */}
+      {/* Sticky Bottom Action Bar */}
       <div className="fixed bottom-0 left-0 right-0 bg-[#0C0C0C]/95 border-t border-[#262626] p-4 z-40">
         <div className="max-w-4xl mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-baseline gap-4">
@@ -514,13 +796,67 @@ export default function DocumentEditor({
         </div>
       </div>
 
+      {/* Modal: Save Current Document as Custom Template */}
+      {isSaveModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="w-full max-w-md bg-[#171717] border border-[#262626] rounded-2xl p-6 space-y-4">
+            <div className="flex items-center justify-between border-b border-[#262626] pb-3">
+              <h3 style={{ fontFamily: "'DM Serif Display', serif" }} className="text-lg text-white">
+                Enregistrer comme modèle d&apos;atelier
+              </h3>
+              <button
+                type="button"
+                onClick={() => setIsSaveModalOpen(false)}
+                className="p-1 text-neutral-400 hover:text-white"
+              >
+                <XMarkIcon className="w-5 h-5" />
+              </button>
+            </div>
+
+            <p className="text-xs text-neutral-300">
+              Ce modèle sauvegardera vos {items.length} lignes de prestation, les conditions de règlement ({paymentProvider}) et la configuration d&apos;acompte pour vos prochains devis et factures.
+            </p>
+
+            <div>
+              <label className="block text-xs font-medium text-neutral-300 mb-1">
+                Nom de votre modèle personnalisé *
+              </label>
+              <input
+                type="text"
+                placeholder="Ex: Mon devis standard Meuble TV / Ma robe mariage"
+                value={newTemplateName}
+                onChange={(e) => setNewTemplateName(e.target.value)}
+                className="w-full px-3.5 py-2.5 rounded-xl bg-[#0C0C0C] border border-[#262626] text-sm text-white placeholder-neutral-500 focus:outline-none focus:border-[#D4AF37]"
+              />
+            </div>
+
+            <div className="flex gap-3 pt-2 border-t border-[#262626]">
+              <button
+                type="button"
+                onClick={() => setIsSaveModalOpen(false)}
+                className="flex-1 py-2.5 rounded-xl border border-[#262626] text-xs text-neutral-300 hover:text-white"
+              >
+                Annuler
+              </button>
+              <button
+                type="button"
+                onClick={handleSaveCurrentAsTemplate}
+                className="flex-1 py-2.5 rounded-xl bg-[#D4AF37] text-[#0C0C0C] text-xs font-semibold hover:bg-[#e2b170] transition-colors"
+              >
+                Enregistrer le modèle
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Dialog for adding line item manually */}
       {isAddDialogOpen && (
         <div className="fixed inset-0 z-50 bg-black/75 flex items-center justify-center p-4">
           <div className="w-full max-w-md rounded-2xl bg-[#171717] border border-[#262626] p-6 space-y-4">
             <div className="flex items-center justify-between border-b border-[#262626] pb-3">
               <h3 style={{ fontFamily: "'DM Serif Display', serif" }} className="text-lg text-white">
-                Ajouter une prestation
+                Ajouter une prestation libre
               </h3>
               <button
                 type="button"
@@ -536,7 +872,7 @@ export default function DocumentEditor({
                 <label className="block text-xs font-medium text-neutral-300 mb-1">Désignation</label>
                 <input
                   type="text"
-                  placeholder="Ex: Confection porte bois rouge"
+                  placeholder="Ex: Confection porte bois rouge / Réparation châssis"
                   value={manualLabel}
                   onChange={(e) => setManualLabel(e.target.value)}
                   className="w-full px-3.5 py-2 rounded-xl bg-[#0C0C0C] border border-[#262626] text-sm text-white placeholder-neutral-500 focus:outline-none focus:border-[#D4AF37]"

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import {
   PlusIcon,
   PencilSquareIcon,
@@ -9,25 +9,18 @@ import {
   TagIcon,
   MagnifyingGlassIcon,
   DocumentPlusIcon,
+  ArrowPathIcon,
 } from "@heroicons/react/24/outline";
-
-export type CraftCategory =
-  | "Tous"
-  | "Menuiserie & Bois"
-  | "Couture & Mode"
-  | "BTP & Électricité"
-  | "Mécanique & Auto"
-  | "Services & Divers";
 
 export interface CatalogItem {
   id: string;
   label: string;
-  category: Exclude<CraftCategory, "Tous">;
+  category: string;
   description?: string;
   price: number;
 }
 
-const initialCatalog: CatalogItem[] = [
+const DEFAULT_CATALOG: CatalogItem[] = [
   // Menuiserie
   {
     id: "1",
@@ -118,8 +111,7 @@ const initialCatalog: CatalogItem[] = [
   },
 ];
 
-const categoryTabs: CraftCategory[] = [
-  "Tous",
+const DEFAULT_CATEGORIES = [
   "Menuiserie & Bois",
   "Couture & Mode",
   "BTP & Électricité",
@@ -132,20 +124,58 @@ interface CatalogViewProps {
 }
 
 export default function CatalogView({ onSelectItemForInvoice }: CatalogViewProps) {
-  const [items, setItems] = useState<CatalogItem[]>(initialCatalog);
-  const [activeCategory, setActiveCategory] = useState<CraftCategory>("Tous");
+  const [items, setItems] = useState<CatalogItem[]>(DEFAULT_CATALOG);
+  const [categories, setCategories] = useState<string[]>(DEFAULT_CATEGORIES);
+  const [activeCategory, setActiveCategory] = useState<string>("Tous");
   const [searchQuery, setSearchQuery] = useState("");
 
   // Dialogs state
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [editItem, setEditItem] = useState<CatalogItem | null>(null);
   const [deleteItem, setDeleteItem] = useState<CatalogItem | null>(null);
+  const [isClearConfirmOpen, setIsClearConfirmOpen] = useState(false);
 
   // Form states
   const [label, setLabel] = useState("");
-  const [category, setCategory] = useState<Exclude<CraftCategory, "Tous">>("Menuiserie & Bois");
+  const [category, setCategory] = useState<string>("Menuiserie & Bois");
+  const [customCategoryInput, setCustomCategoryInput] = useState("");
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState(25000);
+
+  // Load from localStorage on mount
+  useEffect(() => {
+    try {
+      const savedItems = localStorage.getItem("zap_custom_catalog");
+      if (savedItems) {
+        setItems(JSON.parse(savedItems));
+      }
+      const savedCats = localStorage.getItem("zap_custom_categories");
+      if (savedCats) {
+        setCategories(JSON.parse(savedCats));
+      }
+    } catch {
+      // ignore
+    }
+  }, []);
+
+  // Save to localStorage
+  const persistItems = (newItems: CatalogItem[]) => {
+    setItems(newItems);
+    try {
+      localStorage.setItem("zap_custom_catalog", JSON.stringify(newItems));
+    } catch {
+      // ignore
+    }
+  };
+
+  const persistCategories = (newCats: string[]) => {
+    setCategories(newCats);
+    try {
+      localStorage.setItem("zap_custom_categories", JSON.stringify(newCats));
+    } catch {
+      // ignore
+    }
+  };
 
   // Filter items
   const filteredItems = useMemo(() => {
@@ -161,7 +191,8 @@ export default function CatalogView({ onSelectItemForInvoice }: CatalogViewProps
 
   const handleOpenAdd = () => {
     setLabel("");
-    setCategory(activeCategory === "Tous" ? "Menuiserie & Bois" : activeCategory);
+    setCategory(activeCategory === "Tous" ? (categories[0] || "Général") : activeCategory);
+    setCustomCategoryInput("");
     setDescription("");
     setPrice(25000);
     setIsAddOpen(true);
@@ -171,6 +202,7 @@ export default function CatalogView({ onSelectItemForInvoice }: CatalogViewProps
     setEditItem(item);
     setLabel(item.label);
     setCategory(item.category);
+    setCustomCategoryInput("");
     setDescription(item.description || "");
     setPrice(item.price);
   };
@@ -178,35 +210,55 @@ export default function CatalogView({ onSelectItemForInvoice }: CatalogViewProps
   const handleSaveItem = () => {
     if (!label.trim()) return;
 
+    const finalCategory = customCategoryInput.trim() ? customCategoryInput.trim() : category;
+
+    if (customCategoryInput.trim() && !categories.includes(customCategoryInput.trim())) {
+      persistCategories([...categories, customCategoryInput.trim()]);
+    }
+
     if (editItem) {
-      setItems((prev) =>
-        prev.map((it) =>
-          it.id === editItem.id ? { ...it, label: label.trim(), category, description: description.trim(), price } : it
-        )
+      const updated = items.map((it) =>
+        it.id === editItem.id
+          ? { ...it, label: label.trim(), category: finalCategory, description: description.trim(), price }
+          : it
       );
+      persistItems(updated);
       setEditItem(null);
     } else {
       const newItem: CatalogItem = {
         id: Date.now().toString(),
         label: label.trim(),
-        category,
+        category: finalCategory,
         description: description.trim(),
         price,
       };
-      setItems((prev) => [newItem, ...prev]);
+      persistItems([newItem, ...items]);
       setIsAddOpen(false);
     }
   };
 
   const handleConfirmDelete = () => {
     if (!deleteItem) return;
-    setItems((prev) => prev.filter((it) => it.id !== deleteItem.id));
+    const updated = items.filter((it) => it.id !== deleteItem.id);
+    persistItems(updated);
     setDeleteItem(null);
+  };
+
+  // Option: Clear all examples to start from complete scratch
+  const handleClearAllExamples = () => {
+    persistItems([]);
+    setIsClearConfirmOpen(false);
+  };
+
+  // Option: Restore default models
+  const handleRestoreDefaults = () => {
+    persistItems(DEFAULT_CATALOG);
+    persistCategories(DEFAULT_CATEGORIES);
   };
 
   return (
     <div className="flex flex-col gap-6 max-w-5xl mx-auto pb-24">
-      {/* Header & Main Action */}
+      {/* Header & Main Actions */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1
@@ -216,36 +268,71 @@ export default function CatalogView({ onSelectItemForInvoice }: CatalogViewProps
             Modèles de prix &amp; Catalogue d&apos;atelier
           </h1>
           <p className="text-sm text-neutral-400 mt-1">
-            Gagnez du temps sur le terrain : réutilisez vos tarifs d&apos;artisan en 1 clic dans l&apos;éditeur de factures.
+            Utilisez les modèles d&apos;Afrique de l&apos;Ouest ou créez vos propres prestations personnalisées. Rien n&apos;est imposé.
           </p>
         </div>
 
-        <button
-          type="button"
-          onClick={handleOpenAdd}
-          className="flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-[#D4AF37] hover:bg-[#e2b170] text-[#0C0C0C] text-sm font-semibold transition-colors cursor-pointer shrink-0"
-        >
-          <PlusIcon className="w-4 h-4 stroke-[2.5]" />
-          <span>+ Ajouter une prestation</span>
-        </button>
+        <div className="flex items-center gap-2.5 shrink-0">
+          {items.length > 0 ? (
+            <button
+              type="button"
+              onClick={() => setIsClearConfirmOpen(true)}
+              className="py-2 px-3 rounded-xl border border-[#262626] hover:border-red-900/50 text-xs text-neutral-400 hover:text-red-400 transition-colors cursor-pointer"
+              title="Supprimer tous les modèles existants pour partir d'une liste 100% vierge"
+            >
+              Vider les exemples (Partir de zéro)
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={handleRestoreDefaults}
+              className="flex items-center gap-1.5 py-2 px-3 rounded-xl border border-[#262626] hover:border-[#D4AF37]/50 text-xs text-neutral-300 hover:text-[#D4AF37] transition-colors cursor-pointer"
+              title="Restaurer les modèles types d'atelier"
+            >
+              <ArrowPathIcon className="w-3.5 h-3.5" />
+              <span>Restaurer les modèles types</span>
+            </button>
+          )}
+
+          <button
+            type="button"
+            onClick={handleOpenAdd}
+            className="flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-[#D4AF37] hover:bg-[#e2b170] text-[#0C0C0C] text-sm font-semibold transition-colors cursor-pointer shrink-0"
+          >
+            <PlusIcon className="w-4 h-4 stroke-[2.5]" />
+            <span>+ Ajouter une prestation</span>
+          </button>
+        </div>
       </div>
 
       {/* Category Pills and Search Bar */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 bg-[#171717] border border-[#262626] rounded-2xl p-3">
         {/* Category Pills */}
         <div className="flex items-center gap-1.5 overflow-x-auto pb-1 md:pb-0 scrollbar-none">
-          {categoryTabs.map((tab) => (
+          <button
+            type="button"
+            onClick={() => setActiveCategory("Tous")}
+            className={`py-1.5 px-3 rounded-lg text-xs font-medium whitespace-nowrap transition-all cursor-pointer ${
+              activeCategory === "Tous"
+                ? "bg-[#262626] text-[#D4AF37] font-semibold border border-[#D4AF37]/40"
+                : "text-neutral-400 hover:text-white hover:bg-[#202020]"
+            }`}
+          >
+            Tous ({items.length})
+          </button>
+
+          {categories.map((cat) => (
             <button
-              key={tab}
+              key={cat}
               type="button"
-              onClick={() => setActiveCategory(tab)}
+              onClick={() => setActiveCategory(cat)}
               className={`py-1.5 px-3 rounded-lg text-xs font-medium whitespace-nowrap transition-all cursor-pointer ${
-                activeCategory === tab
+                activeCategory === cat
                   ? "bg-[#262626] text-[#D4AF37] font-semibold border border-[#D4AF37]/40"
                   : "text-neutral-400 hover:text-white hover:bg-[#202020]"
               }`}
             >
-              {tab}
+              {cat}
             </button>
           ))}
         </div>
@@ -268,19 +355,34 @@ export default function CatalogView({ onSelectItemForInvoice }: CatalogViewProps
         {filteredItems.length === 0 ? (
           <div className="p-12 text-center">
             <TagIcon className="w-10 h-10 text-neutral-500 mx-auto mb-3" />
-            <p className="text-base text-white font-medium">Aucun modèle trouvé</p>
+            <p className="text-base text-white font-medium">
+              {items.length === 0 ? "Votre catalogue est actuellement vierge" : "Aucun modèle trouvé"}
+            </p>
             <p className="text-xs text-neutral-400 mt-1 mb-4">
-              {searchQuery
+              {items.length === 0
+                ? "Vous avez choisi de partir de zéro. Créez vos propres prestations selon votre activité."
+                : searchQuery
                 ? `Aucun résultat pour "${searchQuery}" dans cette catégorie.`
                 : "Créez vos prestations fréquentes pour facturer en quelques secondes."}
             </p>
-            <button
-              type="button"
-              onClick={handleOpenAdd}
-              className="py-2 px-4 rounded-xl bg-[#D4AF37] text-[#0C0C0C] text-xs font-semibold cursor-pointer"
-            >
-              + Ajouter cet article
-            </button>
+            <div className="flex items-center justify-center gap-3">
+              <button
+                type="button"
+                onClick={handleOpenAdd}
+                className="py-2 px-4 rounded-xl bg-[#D4AF37] text-[#0C0C0C] text-xs font-semibold cursor-pointer"
+              >
+                + Ajouter ma première prestation
+              </button>
+              {items.length === 0 && (
+                <button
+                  type="button"
+                  onClick={handleRestoreDefaults}
+                  className="py-2 px-4 rounded-xl border border-[#262626] text-neutral-300 hover:text-white text-xs cursor-pointer"
+                >
+                  Charger les modèles types
+                </button>
+              )}
+            </div>
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -371,7 +473,7 @@ export default function CatalogView({ onSelectItemForInvoice }: CatalogViewProps
                 style={{ fontFamily: "'DM Serif Display', serif" }}
                 className="text-lg text-white"
               >
-                {editItem ? "Modifier la prestation" : "Nouveau modèle de prix"}
+                {editItem ? "Modifier la prestation" : "Nouveau modèle de prestation"}
               </h3>
               <button
                 type="button"
@@ -388,19 +490,32 @@ export default function CatalogView({ onSelectItemForInvoice }: CatalogViewProps
             <div className="space-y-3.5">
               <div>
                 <label className="block text-xs font-medium text-neutral-300 mb-1">
-                  Corps de métier *
+                  Catégorie / Corps de métier *
                 </label>
                 <select
                   value={category}
-                  onChange={(e) => setCategory(e.target.value as any)}
+                  onChange={(e) => setCategory(e.target.value)}
                   className="w-full px-3.5 py-2.5 rounded-xl bg-[#0C0C0C] border border-[#262626] text-sm text-white focus:outline-none focus:border-[#D4AF37] transition-colors"
                 >
-                  <option value="Menuiserie & Bois">Menuiserie & Bois</option>
-                  <option value="Couture & Mode">Couture & Mode</option>
-                  <option value="BTP & Électricité">BTP & Électricité</option>
-                  <option value="Mécanique & Auto">Mécanique & Auto</option>
-                  <option value="Services & Divers">Services & Divers</option>
+                  {categories.map((c) => (
+                    <option key={c} value={c}>
+                      {c}
+                    </option>
+                  ))}
                 </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-neutral-300 mb-1">
+                  Ou créer une nouvelle catégorie personnalisée
+                </label>
+                <input
+                  type="text"
+                  placeholder="Ex: Soudure & Ferronnerie / Sérigraphie"
+                  value={customCategoryInput}
+                  onChange={(e) => setCustomCategoryInput(e.target.value)}
+                  className="w-full px-3.5 py-2 rounded-xl bg-[#0C0C0C] border border-[#262626] text-xs text-white placeholder-neutral-500 focus:outline-none focus:border-[#D4AF37] transition-colors"
+                />
               </div>
 
               <div>
@@ -467,7 +582,41 @@ export default function CatalogView({ onSelectItemForInvoice }: CatalogViewProps
         </div>
       )}
 
-      {/* Delete Confirmation Modal */}
+      {/* Clear All Confirmation Modal */}
+      {isClearConfirmOpen && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="w-full max-w-sm bg-[#171717] border border-[#262626] rounded-2xl p-6 space-y-3">
+            <h3
+              style={{ fontFamily: "'DM Serif Display', serif" }}
+              className="text-lg text-white"
+            >
+              Vider tous les modèles ?
+            </h3>
+            <p className="text-xs text-neutral-400 leading-relaxed">
+              Cette action supprimera tous les exemples pour vous permettre de créer vos propres modèles sur une base 100% vierge. Vous pourrez les restaurer à tout moment.
+            </p>
+
+            <div className="flex gap-3 pt-3">
+              <button
+                type="button"
+                onClick={() => setIsClearConfirmOpen(false)}
+                className="flex-1 py-2.5 rounded-xl border border-[#262626] text-xs text-neutral-300 hover:text-white"
+              >
+                Annuler
+              </button>
+              <button
+                type="button"
+                onClick={handleClearAllExamples}
+                className="flex-1 py-2.5 rounded-xl bg-red-500/80 hover:bg-red-500 text-white text-xs font-semibold transition-colors"
+              >
+                Vider et partir de zéro
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Single Item Modal */}
       {deleteItem && (
         <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="w-full max-w-sm bg-[#171717] border border-[#262626] rounded-2xl p-6 space-y-3">
