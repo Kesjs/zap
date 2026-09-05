@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useRef, useState, useEffect } from "react";
-import { motion } from "framer-motion";
+import { motion, TargetAndTransition } from "framer-motion";
 
 interface OtpInputProps {
   length?: number;
@@ -99,12 +99,12 @@ export default function OtpInput({
   };
 
   // Horizontal shake animation on error
-  const shakeAnimation = hasError
+  const shakeAnimation: TargetAndTransition | undefined = hasError
     ? {
         x: [-8, 8, -6, 6, -3, 3, 0],
-        transition: { duration: 0.4, ease: "easeInOut" },
+        transition: { duration: 0.4, ease: "easeInOut" as const },
       }
-    : {};
+    : undefined;
 
   return (
     <motion.div
@@ -127,7 +127,7 @@ export default function OtpInput({
                     scale: [1, 1.05, 1],
                     borderColor: ["#D4AF37", "#4ade80", "#22c55e"],
                   }
-                : {}
+                : undefined
             }
             transition={{
               duration: 0.4,
