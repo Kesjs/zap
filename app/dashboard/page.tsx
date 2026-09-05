@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { SidebarProvider, useSidebar } from "@/components/dashboard/sidebar-context";
 import DashboardSidebar, { DashboardView } from "@/components/dashboard/sidebar";
 import DashboardHeader from "@/components/dashboard/header";
 import SalesRegistry, { DocumentItem } from "@/components/dashboard/sales-registry";
@@ -9,11 +10,12 @@ import DocumentEditor from "@/components/dashboard/document-editor";
 import SettingsStamp from "@/components/dashboard/settings-stamp";
 import CatalogView from "@/components/dashboard/catalog-view";
 
-export default function DashboardPage() {
+function DashboardMainContent() {
+  const { isCollapsed } = useSidebar();
+
   const [currentView, setCurrentView] = useState<DashboardView>("registry");
-  const [quotaUsed, setQuotaUsed] = useState(3);
-  const [quotaMax] = useState(8);
-  const [plan] = useState<"gratuit" | "pro-mensuel" | "pro-annuel">("gratuit");
+  const [documentCount, setDocumentCount] = useState(3);
+  const maxDocuments = 8;
 
   const [prefilledClient, setPrefilledClient] = useState("");
   const [prefilledType, setPrefilledType] = useState<"devis" | "facture" | "recu">("facture");
@@ -36,30 +38,22 @@ export default function DashboardPage() {
   };
 
   return (
-    <div
-      style={{
-        display: "flex",
-        minHeight: "100dvh",
-        background: "#0C0C0C",
-        color: "#F4F4F5",
-      }}
-    >
-      {/* Desktop Animated Sidebar */}
+    <div className="min-h-screen bg-[#0C0C0C] text-[#F4F4F5] flex flex-col">
+      {/* 1. Sidebar Collapsible Desktop (240px <-> 68px) + Mobile Drawer */}
       <DashboardSidebar
         currentView={currentView}
         onViewChange={(v) => setCurrentView(v)}
-        quotaUsed={quotaUsed}
-        quotaMax={quotaMax}
-        plan={plan}
-        onLogout={handleLogout}
+        documentCount={documentCount}
+        maxDocuments={maxDocuments}
       />
 
-      {/* Main Content Area */}
+      {/* 2. Main Content Container with dynamic left margin adapting to Sidebar state */}
       <div
-        className="flex-1 flex flex-col min-w-0"
-        style={{ background: "#0C0C0C" }}
+        className={`flex-1 flex flex-col min-w-0 transition-[margin] duration-300 ease-in-out ${
+          isCollapsed ? "md:ml-[68px]" : "md:ml-[240px]"
+        }`}
       >
-        {/* Header (Topbar mobile + view header desktop) */}
+        {/* Sticky Top Header with Breadcrumbs, Toggle & Quick Action */}
         <DashboardHeader
           title={viewTitles[currentView]}
           currentView={currentView}
@@ -68,14 +62,14 @@ export default function DashboardPage() {
         />
 
         {/* Dynamic View Content */}
-        <main className="flex-1 px-4 sm:px-8 py-4 sm:py-6 max-w-6xl w-full mx-auto">
+        <main className="flex-1 px-4 sm:px-6 lg:px-8 py-6 max-w-7xl w-full mx-auto">
           <AnimatePresence mode="wait">
             <motion.div
               key={currentView}
-              initial={{ opacity: 0, y: 8 }}
+              initial={{ opacity: 0, y: 6 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+              exit={{ opacity: 0, y: -6 }}
+              transition={{ duration: 0.18, ease: "easeOut" }}
             >
               {currentView === "registry" && (
                 <SalesRegistry
@@ -90,7 +84,7 @@ export default function DashboardPage() {
                   initialType={prefilledType}
                   initialClient={prefilledClient}
                   onSuccess={() => {
-                    setQuotaUsed((prev) => Math.min(prev + 1, quotaMax));
+                    setDocumentCount((prev) => Math.min(prev + 1, maxDocuments));
                     setCurrentView("registry");
                   }}
                 />
@@ -104,5 +98,13 @@ export default function DashboardPage() {
         </main>
       </div>
     </div>
+  );
+}
+
+export default function DashboardPage() {
+  return (
+    <SidebarProvider>
+      <DashboardMainContent />
+    </SidebarProvider>
   );
 }

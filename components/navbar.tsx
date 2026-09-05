@@ -12,8 +12,8 @@ export default function NavBar() {
   const pathname = usePathname();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  // Hide landing navbar on dashboard pages
-  if (pathname?.startsWith("/dashboard")) {
+  // Hide landing navbar on dashboard and login pages
+  if (pathname?.startsWith("/dashboard") || pathname?.startsWith("/login")) {
     return null;
   }
 

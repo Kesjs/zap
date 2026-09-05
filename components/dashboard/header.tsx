@@ -1,16 +1,19 @@
 "use client";
 
 import React, { useState } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import {
   Bars3Icon,
-  XMarkIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  PlusIcon,
   UserCircleIcon,
   ArrowLeftOnRectangleIcon,
   Cog6ToothIcon,
+  CheckBadgeIcon,
 } from "@heroicons/react/24/outline";
 import { DashboardView } from "./sidebar";
+import { useSidebar } from "./sidebar-context";
 
 interface HeaderProps {
   title: string;
@@ -25,303 +28,164 @@ export default function DashboardHeader({
   onViewChange,
   onLogout,
 }: HeaderProps) {
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const { isCollapsed, toggleSidebar, toggleMobile } = useSidebar();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
-  const navItems = [
-    { id: "registry" as DashboardView, label: "Tableau de bord" },
-    { id: "new" as DashboardView, label: "Nouveau document" },
-    { id: "catalog" as DashboardView, label: "Catalogue" },
-    { id: "settings" as DashboardView, label: "Paramètres & Empreinte" },
-  ];
+  const viewTitles: Record<DashboardView, { section: string; page: string }> = {
+    registry: { section: "Cockpit", page: "Registre des ventes" },
+    new: { section: "Facturation", page: "Nouveau document" },
+    catalog: { section: "Gestion", page: "Catalogue d'articles" },
+    settings: { section: "Configuration", page: "Profil & Cachet" },
+  };
+
+  const breadcrumb = viewTitles[currentView] || { section: "Cockpit", page: title };
 
   return (
-    <>
-      {/* Mobile Topbar (Sticky Top) */}
-      <header
-        className="md:hidden flex items-center justify-between px-4 py-3 border-b border-[#262626]"
-        style={{ background: "#171717", minHeight: "56px" }}
-      >
-        <div className="flex items-center gap-3">
-          <button
-            type="button"
-            onClick={() => setIsDrawerOpen(true)}
-            style={{
-              background: "none",
-              border: "none",
-              color: "#F4F4F5",
-              cursor: "pointer",
-              padding: "4px",
-            }}
-            aria-label="Ouvrir le menu"
-          >
-            <Bars3Icon style={{ width: 24, height: 24 }} />
-          </button>
-
-          <Link href="/" className="flex items-center gap-2" style={{ textDecoration: "none" }}>
-            <div
-              style={{
-                position: "relative",
-                width: "24px",
-                height: "24px",
-                borderRadius: "5px",
-                overflow: "hidden",
-              }}
-            >
-              <Image src="/logo.png" alt="ZAP" width={24} height={24} style={{ objectFit: "contain" }} />
-            </div>
-            <span
-              style={{
-                fontFamily: "'DM Serif Display', serif",
-                fontSize: "19px",
-                color: "#D4AF37",
-              }}
-            >
-              ZAP
-            </span>
-          </Link>
-        </div>
-
-        {/* User Avatar Dropdown trigger */}
-        <div className="relative">
-          <button
-            type="button"
-            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-            style={{
-              background: "none",
-              border: "none",
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-            }}
-          >
-            <div
-              style={{
-                width: "32px",
-                height: "32px",
-                borderRadius: "50%",
-                background: "rgba(212, 175, 55, 0.2)",
-                border: "1px solid rgba(212, 175, 55, 0.4)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                color: "#D4AF37",
-                fontFamily: "'DM Sans', sans-serif",
-                fontSize: "12px",
-                fontWeight: 600,
-              }}
-            >
-              ZK
-            </div>
-          </button>
-        </div>
-      </header>
-
-      {/* Desktop Top Header inside Content Area */}
-      <div className="hidden md:flex items-center justify-between pb-6 border-b border-[#262626] mb-8">
-        <h2
-          style={{
-            fontFamily: "'DM Serif Display', serif",
-            fontSize: "28px",
-            color: "#F4F4F5",
-            margin: 0,
-          }}
+    <header className="sticky top-0 z-30 h-16 bg-[#0C0C0C]/90 backdrop-blur-md border-b border-[#262626] px-4 sm:px-6 flex items-center justify-between transition-all select-none">
+      {/* ──────────────────────────────────────────────────────────────────────────
+          GAUCHE : Sidebar Trigger + Breadcrumbs
+      ────────────────────────────────────────────────────────────────────────── */}
+      <div className="flex items-center gap-3">
+        {/* Mobile Hamburger */}
+        <button
+          type="button"
+          onClick={toggleMobile}
+          className="md:hidden p-2 rounded-lg text-neutral-300 hover:text-white hover:bg-[#171717] border border-[#262626] transition-colors"
+          title="Menu de navigation"
         >
-          {title}
-        </h2>
+          <Bars3Icon className="w-5 h-5" />
+        </button>
 
-        {/* Account Dropdown */}
+        {/* Desktop Sidebar Collapse / Expand Button */}
+        <button
+          type="button"
+          onClick={toggleSidebar}
+          className="hidden md:flex items-center justify-center w-8 h-8 rounded-lg text-neutral-400 hover:text-white hover:bg-[#171717] border border-[#262626] transition-colors cursor-pointer"
+          title={isCollapsed ? "Déplier la barre latérale" : "Replier la barre latérale"}
+        >
+          {isCollapsed ? (
+            <ChevronRightIcon className="w-4 h-4 text-[#D4AF37]" />
+          ) : (
+            <ChevronLeftIcon className="w-4 h-4" />
+          )}
+        </button>
+
+        {/* Separator */}
+        <div className="hidden sm:block h-4 w-[1px] bg-[#262626]" />
+
+        {/* Breadcrumb Navigation */}
+        <nav className="flex items-center gap-2 text-xs font-medium">
+          <span className="text-neutral-500 hidden sm:inline-block">
+            {breadcrumb.section}
+          </span>
+          <span className="text-neutral-600 hidden sm:inline-block">/</span>
+          <span
+            style={{
+              fontFamily: "'DM Sans', sans-serif",
+              color: "#F4F4F5",
+              fontWeight: 500,
+            }}
+            className="text-sm sm:text-xs tracking-tight"
+          >
+            {breadcrumb.page}
+          </span>
+        </nav>
+      </div>
+
+      {/* ──────────────────────────────────────────────────────────────────────────
+          DROITE : Bouton Action Rapide + Profil Dropdown
+      ────────────────────────────────────────────────────────────────────────── */}
+      <div className="flex items-center gap-3">
+        {/* Status Badge (Desktop) */}
+        <div className="hidden lg:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-950/40 border border-emerald-800/40 text-emerald-400 text-[11px] font-mono">
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+          <span>IFU 320194857 · UEMOA</span>
+        </div>
+
+        {/* Fast Action CTA : + Créer un document */}
+        {currentView !== "new" && (
+          <button
+            type="button"
+            onClick={() => onViewChange("new")}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#D4AF37] hover:bg-[#e2b170] text-[#0C0C0C] text-xs font-semibold transition-colors cursor-pointer"
+          >
+            <PlusIcon className="w-4 h-4" />
+            <span className="hidden sm:inline">Créer un document</span>
+            <span className="sm:hidden">Créer</span>
+          </button>
+        )}
+
+        {/* User Profile Dropdown */}
         <div className="relative">
           <button
             type="button"
             onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "10px",
-              background: "#171717",
-              border: "1px solid #262626",
-              borderRadius: "100px",
-              padding: "4px 12px 4px 4px",
-              cursor: "pointer",
-            }}
+            className="flex items-center gap-2 p-1.5 rounded-xl border border-[#262626] bg-[#171717] hover:border-neutral-700 transition-colors cursor-pointer"
+            title="Menu profil"
           >
-            <div
-              style={{
-                width: "28px",
-                height: "28px",
-                borderRadius: "50%",
-                background: "linear-gradient(135deg, #D4AF37, #E2B170)",
-                color: "#0C0C0C",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                fontFamily: "'DM Sans', sans-serif",
-                fontSize: "11px",
-                fontWeight: 600,
-              }}
-            >
-              ZK
+            <div className="w-7 h-7 rounded-lg bg-[#D4AF37]/15 border border-[#D4AF37]/30 text-[#D4AF37] text-xs font-semibold flex items-center justify-center">
+              KM
             </div>
-            <span
-              style={{
-                fontFamily: "'DM Sans', sans-serif",
-                fontSize: "13px",
-                color: "#F4F4F5",
-              }}
-            >
-              Atelier Koffi
-            </span>
           </button>
 
-          {/* Dropdown Menu */}
+          {/* Dropdown Menu Modal */}
           {isDropdownOpen && (
-            <div
-              style={{
-                position: "absolute",
-                right: 0,
-                top: "100%",
-                marginTop: "8px",
-                width: "190px",
-                background: "#171717",
-                border: "1px solid #262626",
-                borderRadius: "14px",
-                padding: "6px",
-                zIndex: 50,
-                boxShadow: "0 16px 32px rgba(0,0,0,0.5)",
-              }}
-            >
-              <button
-                type="button"
-                onClick={() => {
-                  onViewChange("settings");
-                  setIsDropdownOpen(false);
-                }}
-                className="w-full flex items-center gap-2.5 px-3 py-2 text-[13px] text-[#F4F4F5] hover:bg-[#262626] rounded-lg transition-colors text-left"
-                style={{ background: "transparent", border: "none", cursor: "pointer" }}
-              >
-                <Cog6ToothIcon style={{ width: 16, height: 16, color: "#D4AF37" }} />
-                <span>Paramètres & Profil</span>
-              </button>
+            <>
+              {/* Invisible dismiss backdrop */}
+              <div
+                className="fixed inset-0 z-40"
+                onClick={() => setIsDropdownOpen(false)}
+              />
 
-              <div style={{ height: "1px", background: "#262626", margin: "4px 0" }} />
+              <div className="absolute right-0 mt-2 w-56 rounded-xl bg-[#171717] border border-[#262626] p-2 z-50 text-xs">
+                {/* User details */}
+                <div className="px-3 py-2 border-b border-[#262626] mb-1">
+                  <p className="font-medium text-white truncate">Koffi Mensah</p>
+                  <p className="text-[11px] text-neutral-400 truncate">Atelier Teck & Or</p>
+                </div>
 
-              <button
-                type="button"
-                onClick={() => {
-                  setIsDropdownOpen(false);
-                  onLogout?.();
-                }}
-                className="w-full flex items-center gap-2.5 px-3 py-2 text-[13px] text-[#E08585] hover:bg-[#262626] rounded-lg transition-colors text-left"
-                style={{ background: "transparent", border: "none", cursor: "pointer" }}
-              >
-                <ArrowLeftOnRectangleIcon style={{ width: 16, height: 16 }} />
-                <span>Déconnexion</span>
-              </button>
-            </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    onViewChange("settings");
+                    setIsDropdownOpen(false);
+                  }}
+                  className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-neutral-300 hover:text-white hover:bg-[#262626] transition-colors text-left"
+                >
+                  <Cog6ToothIcon className="w-4 h-4 text-neutral-400" />
+                  <span>Profil & Cachet fiscal</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    onViewChange("catalog");
+                    setIsDropdownOpen(false);
+                  }}
+                  className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-neutral-300 hover:text-white hover:bg-[#262626] transition-colors text-left"
+                >
+                  <CheckBadgeIcon className="w-4 h-4 text-neutral-400" />
+                  <span>Mes prestations & prix</span>
+                </button>
+
+                <div className="border-t border-[#262626] my-1" />
+
+                <Link
+                  href="/login"
+                  onClick={() => {
+                    setIsDropdownOpen(false);
+                    if (onLogout) onLogout();
+                  }}
+                  className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-red-400 hover:bg-red-950/40 transition-colors text-left no-underline"
+                >
+                  <ArrowLeftOnRectangleIcon className="w-4 h-4" />
+                  <span>Se déconnecter</span>
+                </Link>
+              </div>
+            </>
           )}
         </div>
       </div>
-
-      {/* Mobile Drawer */}
-      {isDrawerOpen && (
-        <div
-          style={{
-            position: "fixed",
-            inset: 0,
-            zIndex: 100,
-            background: "rgba(0,0,0,0.75)",
-            backdropFilter: "blur(4px)",
-            display: "flex",
-          }}
-        >
-          <div
-            style={{
-              width: "280px",
-              background: "#171717",
-              borderRight: "1px solid #262626",
-              height: "100%",
-              padding: "24px 16px",
-              display: "flex",
-              flexDirection: "column",
-              justifyContent: "space-between",
-            }}
-          >
-            <div>
-              <div className="flex items-center justify-between mb-8 px-2">
-                <span
-                  style={{
-                    fontFamily: "'DM Serif Display', serif",
-                    fontSize: "22px",
-                    color: "#D4AF37",
-                  }}
-                >
-                  ZAP
-                </span>
-                <button
-                  type="button"
-                  onClick={() => setIsDrawerOpen(false)}
-                  style={{ background: "none", border: "none", color: "#A1A1AA", cursor: "pointer" }}
-                >
-                  <XMarkIcon style={{ width: 24, height: 24 }} />
-                </button>
-              </div>
-
-              <div className="flex flex-col gap-1">
-                {navItems.map((item) => (
-                  <button
-                    key={item.id}
-                    type="button"
-                    onClick={() => {
-                      onViewChange(item.id);
-                      setIsDrawerOpen(false);
-                    }}
-                    style={{
-                      display: "block",
-                      width: "100%",
-                      textAlign: "left",
-                      padding: "12px 14px",
-                      borderRadius: "10px",
-                      background: currentView === item.id ? "#262626" : "transparent",
-                      color: currentView === item.id ? "#D4AF37" : "#F4F4F5",
-                      border: "none",
-                      fontFamily: "'DM Sans', sans-serif",
-                      fontSize: "14px",
-                      fontWeight: 500,
-                      cursor: "pointer",
-                    }}
-                  >
-                    {item.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <button
-              type="button"
-              onClick={() => {
-                setIsDrawerOpen(false);
-                onLogout?.();
-              }}
-              style={{
-                background: "none",
-                border: "none",
-                color: "#E08585",
-                display: "flex",
-                alignItems: "center",
-                gap: "10px",
-                padding: "12px",
-                cursor: "pointer",
-              }}
-            >
-              <ArrowLeftOnRectangleIcon style={{ width: 18, height: 18 }} />
-              <span style={{ fontFamily: "'DM Sans', sans-serif", fontSize: "14px" }}>
-                Déconnexion
-              </span>
-            </button>
-          </div>
-        </div>
-      )}
-    </>
+    </header>
   );
 }
