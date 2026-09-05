@@ -122,11 +122,11 @@ Conçu pour coller à la réalité de terrain des paiements en Afrique de l'Oues
 
 ---
 
-### H. Catalogue d'Atelier & Modèles de Prix Multi-Métiers
-- Organisation par corps de métier : `Menuiserie & Bois`, `Couture & Mode`, `BTP & Électricité`, `Mécanique & Auto`, `Services & Divers`.
-- **Création libre de catégories personnalisées** selon votre activité spécifique (ex: *Ferronnerie*, *Sérigraphie*, *Coiffure*).
-- **Option "Partir de zéro"** : Bouton pour vider tous les exemples en 1 clic pour un catalogue 100% sur mesure, avec bouton de restauration des modèles types à tout moment.
-- **Bouton "+ Facturer" 1-clic** : Insère instantanément une prestation du catalogue dans une nouvelle facture.
+### H. Catalogue d'Atelier, Vrais Modèles du Marché & Sur-mesure
+- **Vrais modèles du marché intégrés** : Le catalogue est pré-rempli avec de véritables exemples de prix (en FCFA) et de prestations inspirés de la réalité du marché local et conformes, organisés par corps de métier (`Menuiserie & Bois`, `Couture & Mode`, `BTP & Électricité`, `Mécanique & Auto`, `Services & Divers`).
+- **Création de vos propres modèles** : Vous n'êtes pas obligé d'utiliser les modèles existants. Ajoutez librement vos propres articles et catégories (*Ferronnerie*, *Sérigraphie*, *Coiffure*, etc.).
+- **Liberté totale (Option "Partir de zéro")** : Un bouton permet de vider tous les exemples par défaut en un seul clic pour obtenir un catalogue 100% vierge. Vous pouvez restaurer les modèles types à tout moment.
+- **Bouton "+ Facturer" 1-clic** : Insère instantanément une prestation du catalogue dans un nouveau document (devis ou facture).
 - Persistance locale des données (`localStorage`).
 
 ---
