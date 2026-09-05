@@ -6,178 +6,88 @@ const testimonials = [
   {
     quote:
       "Mes clients me font davantage confiance depuis que mes factures ont l'air aussi sérieuses que celles d'un grand atelier.",
-    author: "Kofi A.",
+    author: "Moussa D.",
     role: "Mécanicien",
     city: "Cotonou",
-    initials: "KA",
   },
   {
     quote:
       "Je n'ai plus besoin de courir après mon carnet à souche. Tout est sur mon téléphone.",
-    author: "Aminata S.",
+    author: "Ablavi T.",
     role: "Couturière",
     city: "Lomé",
-    initials: "AS",
   },
   {
     quote:
       "Le cachet numérique, c'est exactement mon vrai cachet — mes clients ne voient pas la différence.",
-    author: "Jean-Baptiste K.",
+    author: "Kouamé B.",
     role: "Menuisier",
     city: "Abidjan",
-    initials: "JK",
-  },
-  {
-    quote:
-      "En quelques secondes j'envoie le reçu sur WhatsApp. Mes clients adorent, et moi aussi.",
-    author: "Fatou D.",
-    role: "Vendeuse en gros",
-    city: "Dakar",
-    initials: "FD",
-  },
-  {
-    quote:
-      "Avant ZAP, je perdais des heures à réécrire les mêmes informations. Maintenant c'est automatique.",
-    author: "Emmanuel N.",
-    role: "Électricien",
-    city: "Ouagadougou",
-    initials: "EN",
   },
 ];
 
-// Double for seamless loop
-const items = [...testimonials, ...testimonials];
-
-function TestimonialCard({
-  quote,
-  author,
-  role,
-  city,
-  initials,
-}: (typeof testimonials)[0]) {
-  return (
-    <div
-      style={{
-        background: "#171717",
-        border: "1px solid #262626",
-        borderRadius: "16px",
-        padding: "24px",
-        width: "300px",
-        flexShrink: 0,
-        display: "flex",
-        flexDirection: "column",
-        gap: "16px",
-      }}
-    >
-      {/* Quote */}
-      <p
-        style={{
-          fontFamily: "'DM Serif Display', serif",
-          fontStyle: "italic",
-          fontSize: "15px",
-          color: "#F4F4F5",
-          lineHeight: 1.65,
-          flex: 1,
-        }}
-      >
-        &laquo;&nbsp;{quote}&nbsp;&raquo;
-      </p>
-
-      {/* Author */}
-      <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-        {/* Avatar */}
-        <div
-          style={{
-            width: "36px",
-            height: "36px",
-            borderRadius: "50%",
-            background:
-              "linear-gradient(135deg, rgba(212,175,55,0.25) 0%, rgba(226,177,112,0.15) 100%)",
-            border: "1px solid rgba(212,175,55,0.25)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            fontFamily: "'DM Serif Display', serif",
-            fontSize: "12px",
-            color: "#D4AF37",
-            flexShrink: 0,
-          }}
-        >
-          {initials}
-        </div>
-        <div>
-          <p
-            style={{
-              fontFamily: "'DM Sans', sans-serif",
-              fontSize: "13px",
-              fontWeight: 500,
-              color: "#F4F4F5",
-            }}
-          >
-            {author}
-          </p>
-          <p
-            style={{
-              fontFamily: "'DM Sans', sans-serif",
-              fontSize: "11.5px",
-              color: "rgba(244,244,245,0.45)",
-            }}
-          >
-            {role}, {city}
-          </p>
-        </div>
-      </div>
-    </div>
-  );
-}
+// Replicate for seamless infinite marquee loop
+const items = [...testimonials, ...testimonials, ...testimonials];
 
 export default function Testimonials() {
   return (
     <section
-      id="testimonials"
-      className="section-padding"
-      style={{ background: "#0A0A0A", overflow: "hidden" }}
+      style={{
+        background: "#0C0C0C",
+        padding: "88px 0",
+        overflow: "hidden",
+      }}
     >
-      {/* Label */}
-      <motion.p
-        initial={{ opacity: 0 }}
-        whileInView={{ opacity: 1 }}
-        viewport={{ once: true }}
-        className="label-tracked"
-        style={{ textAlign: "center", marginBottom: "16px" }}
-      >
-        Témoignages
-      </motion.p>
+      <div style={{ maxWidth: "1024px", margin: "0 auto", padding: "0 24px" }}>
+        {/* Section Header */}
+        <div style={{ textAlign: "center", marginBottom: "48px" }}>
+          <motion.h2
+            initial={{ opacity: 0, y: 14 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5 }}
+            style={{
+              fontFamily: "'DM Serif Display', serif",
+              fontSize: "clamp(28px, 4vw, 38px)",
+              color: "#F4F4F5",
+              lineHeight: 1.2,
+              marginBottom: "12px",
+            }}
+          >
+            Ils font confiance à{" "}
+            <span
+              style={{
+                fontStyle: "italic",
+                background: "linear-gradient(135deg, #D4AF37 0%, #E2B170 100%)",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                backgroundClip: "text",
+              }}
+            >
+              ZAP
+            </span>
+          </motion.h2>
 
-      {/* Heading */}
-      <motion.h2
-        initial={{ opacity: 0, y: 12 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        transition={{ duration: 0.5 }}
-        style={{
-          fontFamily: "'DM Serif Display', serif",
-          fontSize: "clamp(26px, 4vw, 36px)",
-          color: "#F4F4F5",
-          textAlign: "center",
-          marginBottom: "56px",
-        }}
-      >
-        Ce qu&apos;en disent{" "}
-        <span
-          style={{
-            fontStyle: "italic",
-            background: "linear-gradient(135deg, #D4AF37 0%, #E2B170 100%)",
-            WebkitBackgroundClip: "text",
-            WebkitTextFillColor: "transparent",
-            backgroundClip: "text",
-          }}
-        >
-          nos utilisateurs
-        </span>
-      </motion.h2>
+          <motion.p
+            initial={{ opacity: 0, y: 10 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: 0.1 }}
+            style={{
+              fontFamily: "'DM Sans', sans-serif",
+              fontSize: "15px",
+              fontWeight: 300,
+              color: "rgba(244, 244, 245, 0.65)",
+              maxWidth: "460px",
+              margin: "0 auto",
+            }}
+          >
+            Artisans et entrepreneurs indépendants partagent leur expérience.
+          </motion.p>
+        </div>
+      </div>
 
-      {/* Marquee row */}
+      {/* Infinite Marquee with edge fades and hover pause */}
       <div
         style={{
           maskImage:
@@ -191,8 +101,9 @@ export default function Testimonials() {
           className="animate-marquee"
           style={{
             display: "flex",
-            gap: "16px",
+            gap: "20px",
             width: "max-content",
+            padding: "8px 0",
           }}
           onMouseEnter={(e) => {
             (e.currentTarget as HTMLElement).style.animationPlayState =
@@ -204,7 +115,58 @@ export default function Testimonials() {
           }}
         >
           {items.map((t, i) => (
-            <TestimonialCard key={`${t.author}-${i}`} {...t} />
+            <div
+              key={`${t.city}-${i}`}
+              style={{
+                background: "#171717",
+                border: "1px solid #262626",
+                borderRadius: "14px",
+                padding: "24px 28px",
+                width: "340px",
+                flexShrink: 0,
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "space-between",
+                gap: "18px",
+              }}
+            >
+              <p
+                style={{
+                  fontFamily: "'DM Serif Display', serif",
+                  fontStyle: "italic",
+                  fontSize: "15.5px",
+                  color: "#F4F4F5",
+                  lineHeight: 1.6,
+                  margin: 0,
+                }}
+              >
+                &laquo;&nbsp;{t.quote}&nbsp;&raquo;
+              </p>
+
+              <div>
+                <p
+                  style={{
+                    fontFamily: "'DM Sans', sans-serif",
+                    fontSize: "13.5px",
+                    fontWeight: 500,
+                    color: "#D4AF37",
+                    margin: 0,
+                  }}
+                >
+                  {t.author}
+                </p>
+                <p
+                  style={{
+                    fontFamily: "'DM Sans', sans-serif",
+                    fontSize: "12px",
+                    color: "rgba(244, 244, 245, 0.45)",
+                    margin: "2px 0 0",
+                  }}
+                >
+                  {t.role}, {t.city}
+                </p>
+              </div>
+            </div>
           ))}
         </div>
       </div>

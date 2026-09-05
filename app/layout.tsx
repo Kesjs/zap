@@ -26,6 +26,8 @@ export const metadata: Metadata = {
   },
 };
 
+import TopLoader from "@/components/ui/top-loader";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -46,6 +48,7 @@ export default function RootLayout({
         />
       </head>
       <body className="antialiased" style={{ background: "#0C0C0C" }}>
+        <TopLoader />
         <NavBar />
         {children}
       </body>

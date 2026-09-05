@@ -1,28 +1,32 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
 
-export default function NavBar() {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [mounted, setMounted] = useState(false);
+import { usePathname } from "next/navigation";
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+export default function NavBar() {
+  const pathname = usePathname();
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  // Hide landing navbar on dashboard pages
+  if (pathname?.startsWith("/dashboard")) {
+    return null;
+  }
 
   const navLinks = [
-    { label: "Features", href: "#features" },
-    { label: "Pricing", href: "#pricing" },
-    { label: "FAQ", href: "#faq" },
+    { label: "Produit", href: "/#produit" },
+    { label: "Pricing", href: "/#pricing" },
+    { label: "FAQ", href: "/#faq" },
     { label: "Login", href: "/login" },
   ];
 
   return (
-    <motion.div
-      className="fixed top-0 left-0 right-0 z-50 flex justify-center px-4 pt-3"
+    <motion.header
+      className="fixed top-0 left-0 right-0 z-50 flex justify-center px-3 pt-3"
       initial={{ y: -20, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.4, ease: "easeOut" }}
@@ -39,21 +43,45 @@ export default function NavBar() {
           height: "52px",
         }}
       >
-        <div className="flex items-center justify-between h-full px-5">
+        <div className="flex items-center justify-between h-full px-4 sm:px-5">
           {/* Logo */}
           <Link
             href="/"
-            className="flex-shrink-0"
-            style={{
-              fontFamily: "'DM Serif Display', serif",
-              fontSize: "22px",
-              fontWeight: 400,
-              color: "#D4AF37",
-              letterSpacing: "-0.02em",
-              textDecoration: "none",
-            }}
+            className="flex items-center gap-2.5 flex-shrink-0"
+            style={{ textDecoration: "none" }}
           >
-            ZAP
+            <div
+              style={{
+                position: "relative",
+                width: "28px",
+                height: "28px",
+                borderRadius: "6px",
+                overflow: "hidden",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <Image
+                src="/logo.png"
+                alt="ZAP Logo"
+                width={28}
+                height={28}
+                priority
+                style={{ objectFit: "contain" }}
+              />
+            </div>
+            <span
+              style={{
+                fontFamily: "'DM Serif Display', serif",
+                fontSize: "21px",
+                fontWeight: 400,
+                color: "#D4AF37",
+                letterSpacing: "-0.02em",
+              }}
+            >
+              ZAP
+            </span>
           </Link>
 
           {/* Center nav links — desktop */}
@@ -67,7 +95,7 @@ export default function NavBar() {
                   fontSize: "13.5px",
                   fontWeight: 400,
                   color: "rgba(244, 244, 245, 0.70)",
-                  padding: "6px 12px",
+                  padding: "6px 14px",
                   borderRadius: "8px",
                   textDecoration: "none",
                   transition: "color 0.2s ease",
@@ -88,25 +116,25 @@ export default function NavBar() {
           {/* Right CTA + mobile hamburger */}
           <div className="flex items-center gap-3">
             {/* CTA — desktop */}
-            <motion.a
-              href="#pricing"
-              className="hidden md:flex items-center"
-              style={{
-                fontFamily: "'DM Sans', sans-serif",
-                fontSize: "13px",
-                fontWeight: 500,
-                color: "#0C0C0C",
-                background: "linear-gradient(135deg, #D4AF37 0%, #E2B170 100%)",
-                padding: "8px 16px",
-                borderRadius: "8px",
-                textDecoration: "none",
-                whiteSpace: "nowrap",
-              }}
-              whileHover={{ y: -1 }}
-              transition={{ duration: 0.15 }}
-            >
-              Commencer gratuitement
-            </motion.a>
+            <motion.div whileHover={{ y: -1 }} transition={{ duration: 0.15 }}>
+              <Link
+                href="/login"
+                className="hidden md:flex items-center"
+                style={{
+                  fontFamily: "'DM Sans', sans-serif",
+                  fontSize: "13px",
+                  fontWeight: 500,
+                  color: "#0C0C0C",
+                  background: "linear-gradient(135deg, #D4AF37 0%, #E2B170 100%)",
+                  padding: "8px 16px",
+                  borderRadius: "8px",
+                  textDecoration: "none",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                Commencer gratuitement
+              </Link>
+            </motion.div>
 
             {/* Mobile hamburger with 44px touch target */}
             <button
@@ -122,7 +150,9 @@ export default function NavBar() {
                 padding: "10px",
                 borderRadius: "8px",
               }}
-              aria-label={isMenuOpen ? "Fermer le menu de navigation" : "Ouvrir le menu de navigation"}
+              aria-label={
+                isMenuOpen ? "Fermer le menu de navigation" : "Ouvrir le menu de navigation"
+              }
               id="navbar-menu-toggle"
             >
               {isMenuOpen ? (
@@ -181,8 +211,8 @@ export default function NavBar() {
               </motion.div>
             ))}
             <div style={{ padding: "8px 6px 2px" }}>
-              <a
-                href="#pricing"
+              <Link
+                href="/login"
                 onClick={() => setIsMenuOpen(false)}
                 style={{
                   display: "block",
@@ -199,11 +229,11 @@ export default function NavBar() {
                 }}
               >
                 Commencer gratuitement
-              </a>
+              </Link>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
-    </motion.div>
+    </motion.header>
   );
 }

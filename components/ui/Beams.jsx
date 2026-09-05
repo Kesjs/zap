@@ -1,8 +1,8 @@
 /* eslint-disable react/no-unknown-property */
+"use client";
+
 import { forwardRef, useImperativeHandle, useEffect, useRef, useMemo } from 'react';
-
 import * as THREE from 'three';
-
 import { Canvas, useFrame } from '@react-three/fiber';
 import { PerspectiveCamera } from '@react-three/drei';
 import { degToRad } from 'three/src/math/MathUtils.js';
@@ -51,7 +51,7 @@ function extendMaterial(BaseMaterial, cfg) {
 }
 
 const CanvasWrapper = ({ children }) => (
-  <Canvas dpr={[1, 2]} frameloop="always" className="beams-container">
+  <Canvas dpr={[1, 1.5]} frameloop="always" className="beams-container">
     {children}
   </Canvas>
 );
@@ -144,12 +144,12 @@ float cnoise(vec3 P){
 const Beams = ({
   beamWidth = 2,
   beamHeight = 15,
-  beamNumber = 12,
-  lightColor = '#ffffff',
-  beamColor = '#000000',
-  backgroundColor = '#000000',
-  speed = 2,
-  noiseIntensity = 1.75,
+  beamNumber = 10,
+  lightColor = '#D4AF37',
+  beamColor = '#3a2800',
+  backgroundColor = '#0C0C0C',
+  speed = 1.2,
+  noiseIntensity = 1.5,
   scale = 0.2,
   rotation = 0,
   lightMode = false
@@ -284,11 +284,13 @@ const MergedPlanes = forwardRef(({ material, width, count, height }, ref) => {
   const mesh = useRef(null);
   useImperativeHandle(ref, () => mesh.current);
   const geometry = useMemo(
-    () => createStackedPlanesBufferGeometry(count, width, height, 0, 100),
+    () => createStackedPlanesBufferGeometry(count, width, height, 0, 70),
     [count, width, height]
   );
   useFrame((_, delta) => {
-    mesh.current.material.uniforms.time.value += 0.1 * delta;
+    if (mesh.current?.material?.uniforms?.time) {
+      mesh.current.material.uniforms.time.value += 0.1 * delta;
+    }
   });
   return <mesh ref={mesh} geometry={geometry} material={material} />;
 });
@@ -303,7 +305,7 @@ const DirLight = ({ position, color }) => {
   const dir = useRef(null);
   useEffect(() => {
     if (!dir.current) return;
-    const cam = dir.current.shadow.camera;
+    const cam = dir.current.shadow?.camera;
     if (!cam) return;
     cam.top = 24;
     cam.bottom = -24;
