@@ -1,32 +1,140 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import {
   PlusIcon,
   PencilSquareIcon,
   TrashIcon,
   XMarkIcon,
   TagIcon,
-  CheckBadgeIcon,
+  MagnifyingGlassIcon,
+  DocumentPlusIcon,
 } from "@heroicons/react/24/outline";
+
+export type CraftCategory =
+  | "Tous"
+  | "Menuiserie & Bois"
+  | "Couture & Mode"
+  | "BTP & Électricité"
+  | "Mécanique & Auto"
+  | "Services & Divers";
 
 export interface CatalogItem {
   id: string;
   label: string;
+  category: Exclude<CraftCategory, "Tous">;
   description?: string;
   price: number;
 }
 
 const initialCatalog: CatalogItem[] = [
-  { id: "1", label: "Vidange moteur + filtre", description: "Huile synthétique 5W40 + filtre à huile neuf", price: 8500 },
-  { id: "2", label: "Remplacement plaquettes de frein", description: "Plaquettes céramique avant + purge liquide", price: 12000 },
-  { id: "3", label: "Diagnostic électronique", description: "Scan valise OBD-II complet et rapport d'erreurs", price: 7500 },
-  { id: "4", label: "Montage & équilibrage pneu", description: "Par pneumatique avec plomb neuf", price: 4000 },
-  { id: "5", label: "Réparation climatisation", description: "Recharge gaz R134a et détection de fuite traceur", price: 25000 },
+  // Menuiserie
+  {
+    id: "1",
+    label: "Table de réunion teck massif (12 places)",
+    category: "Menuiserie & Bois",
+    description: "Finitions huilées premium, piètement renforcé anti-déformation",
+    price: 350000,
+  },
+  {
+    id: "2",
+    label: "Porte isoplane sur mesure (bois rouge)",
+    category: "Menuiserie & Bois",
+    description: "Avec chambranle, pose serrure 3 points et vernis marin",
+    price: 45000,
+  },
+  {
+    id: "3",
+    label: "Fabrication & pose cuisine aménagée",
+    category: "Menuiserie & Bois",
+    description: "Caissons mélaminé hydrofuge, façades placage chêne",
+    price: 180000,
+  },
+  // Couture & Mode
+  {
+    id: "4",
+    label: "Confection tenue Bazin riche brodé",
+    category: "Couture & Mode",
+    description: "Broderie artisanale au fil or, coupe grand boubou 3 pièces",
+    price: 65000,
+  },
+  {
+    id: "5",
+    label: "Robe de soirée sur mesure",
+    category: "Couture & Mode",
+    description: "Tissu fourni par l'atelier, doublure satin et finitions main",
+    price: 40000,
+  },
+  {
+    id: "6",
+    label: "Chemise homme pagne wax & col mao",
+    category: "Couture & Mode",
+    description: "Coutures rabattues haute résistance, boutons en bois",
+    price: 18000,
+  },
+  // BTP & Électricité
+  {
+    id: "7",
+    label: "Installation tableau électrique divisionnaire",
+    category: "BTP & Électricité",
+    description: "Câblage 8 disjoncteurs différentiels 30mA aux normes UEMOA",
+    price: 50000,
+  },
+  {
+    id: "8",
+    label: "Raccordement plomberie & pose sanitaires",
+    category: "BTP & Électricité",
+    description: "Tuyauterie PER encastrée et pose receveur de douche",
+    price: 35000,
+  },
+  {
+    id: "9",
+    label: "Peinture intérieure mate (3 pièces)",
+    category: "BTP & Électricité",
+    description: "Lessivage, enduit de lissage 2 passes et peinture acrylique",
+    price: 85000,
+  },
+  // Mécanique & Auto
+  {
+    id: "10",
+    label: "Vidange moteur synthétique 5W40 + filtre",
+    category: "Mécanique & Auto",
+    description: "Huile haute performance + remplacement filtre à huile & purge",
+    price: 15000,
+  },
+  {
+    id: "11",
+    label: "Diagnostic électronique valise OBD-II",
+    category: "Mécanique & Auto",
+    description: "Scan des calculateurs moteur/ABS et remise à zéro des voyants",
+    price: 10000,
+  },
+  {
+    id: "12",
+    label: "Remplacement plaquettes de frein avant",
+    category: "Mécanique & Auto",
+    description: "Fourniture plaquettes céramique et vérification des disques",
+    price: 18000,
+  },
 ];
 
-export default function CatalogView() {
+const categoryTabs: CraftCategory[] = [
+  "Tous",
+  "Menuiserie & Bois",
+  "Couture & Mode",
+  "BTP & Électricité",
+  "Mécanique & Auto",
+  "Services & Divers",
+];
+
+interface CatalogViewProps {
+  onSelectItemForInvoice?: (item: CatalogItem) => void;
+}
+
+export default function CatalogView({ onSelectItemForInvoice }: CatalogViewProps) {
   const [items, setItems] = useState<CatalogItem[]>(initialCatalog);
+  const [activeCategory, setActiveCategory] = useState<CraftCategory>("Tous");
+  const [searchQuery, setSearchQuery] = useState("");
 
   // Dialogs state
   const [isAddOpen, setIsAddOpen] = useState(false);
@@ -35,19 +143,34 @@ export default function CatalogView() {
 
   // Form states
   const [label, setLabel] = useState("");
+  const [category, setCategory] = useState<Exclude<CraftCategory, "Tous">>("Menuiserie & Bois");
   const [description, setDescription] = useState("");
-  const [price, setPrice] = useState(5000);
+  const [price, setPrice] = useState(25000);
+
+  // Filter items
+  const filteredItems = useMemo(() => {
+    return items.filter((it) => {
+      const matchesCat = activeCategory === "Tous" || it.category === activeCategory;
+      const matchesSearch =
+        it.label.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (it.description && it.description.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        it.category.toLowerCase().includes(searchQuery.toLowerCase());
+      return matchesCat && matchesSearch;
+    });
+  }, [items, activeCategory, searchQuery]);
 
   const handleOpenAdd = () => {
     setLabel("");
+    setCategory(activeCategory === "Tous" ? "Menuiserie & Bois" : activeCategory);
     setDescription("");
-    setPrice(5000);
+    setPrice(25000);
     setIsAddOpen(true);
   };
 
   const handleOpenEdit = (item: CatalogItem) => {
     setEditItem(item);
     setLabel(item.label);
+    setCategory(item.category);
     setDescription(item.description || "");
     setPrice(item.price);
   };
@@ -56,20 +179,21 @@ export default function CatalogView() {
     if (!label.trim()) return;
 
     if (editItem) {
-      // Edit existing
       setItems((prev) =>
-        prev.map((it) => (it.id === editItem.id ? { ...it, label, description, price } : it))
+        prev.map((it) =>
+          it.id === editItem.id ? { ...it, label: label.trim(), category, description: description.trim(), price } : it
+        )
       );
       setEditItem(null);
     } else {
-      // Add new
       const newItem: CatalogItem = {
         id: Date.now().toString(),
         label: label.trim(),
+        category,
         description: description.trim(),
         price,
       };
-      setItems((prev) => [...prev, newItem]);
+      setItems((prev) => [newItem, ...prev]);
       setIsAddOpen(false);
     }
   };
@@ -81,189 +205,173 @@ export default function CatalogView() {
   };
 
   return (
-    <div className="flex flex-col gap-6 max-w-4xl mx-auto pb-24">
-      {/* Header & CTA */}
-      <div className="flex items-center justify-between">
+    <div className="flex flex-col gap-6 max-w-5xl mx-auto pb-24">
+      {/* Header & Main Action */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h3 style={{ fontFamily: "'DM Serif Display', serif", fontSize: "22px", color: "#F4F4F5", margin: 0 }}>
-            Modèles de prix &amp; Catalogue
-          </h3>
-          <p style={{ fontSize: "13px", color: "#A1A1AA", margin: "4px 0 0" }}>
-            Vos prestations réutilisables en 1 clic dans l&apos;éditeur de factures.
+          <h1
+            style={{ fontFamily: "'DM Serif Display', serif" }}
+            className="text-2xl text-white tracking-tight"
+          >
+            Modèles de prix &amp; Catalogue d&apos;atelier
+          </h1>
+          <p className="text-sm text-neutral-400 mt-1">
+            Gagnez du temps sur le terrain : réutilisez vos tarifs d&apos;artisan en 1 clic dans l&apos;éditeur de factures.
           </p>
         </div>
 
         <button
           type="button"
           onClick={handleOpenAdd}
-          style={{
-            background: "linear-gradient(135deg, #D4AF37 0%, #E2B170 100%)",
-            border: "none",
-            borderRadius: "12px",
-            padding: "10px 18px",
-            color: "#0C0C0C",
-            fontFamily: "'DM Sans', sans-serif",
-            fontSize: "13.5px",
-            fontWeight: 600,
-            cursor: "pointer",
-            display: "flex",
-            alignItems: "center",
-            gap: "6px",
-          }}
+          className="flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-[#D4AF37] hover:bg-[#e2b170] text-[#0C0C0C] text-sm font-semibold transition-colors cursor-pointer shrink-0"
         >
-          <PlusIcon style={{ width: 16, height: 16 }} />
-          <span>+ Ajouter un article</span>
+          <PlusIcon className="w-4 h-4 stroke-[2.5]" />
+          <span>+ Ajouter une prestation</span>
         </button>
       </div>
 
-      {/* Catalog Table */}
-      <div
-        style={{
-          background: "#171717",
-          border: "1px solid #262626",
-          borderRadius: "16px",
-          overflow: "hidden",
-        }}
-      >
-        {items.length === 0 ? (
-          <div style={{ padding: "48px 24px", textAlign: "center" }}>
-            <TagIcon style={{ width: 36, height: 36, color: "#A1A1AA", margin: "0 auto 12px" }} />
-            <p style={{ fontSize: "15px", color: "#F4F4F5", fontWeight: 500, margin: 0 }}>
-              Aucun article pour l&apos;instant
-            </p>
-            <p style={{ fontSize: "13px", color: "#A1A1AA", margin: "4px 0 16px" }}>
-              Créez vos modèles de prestations pour facturer encore plus rapidement.
+      {/* Category Pills and Search Bar */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 bg-[#171717] border border-[#262626] rounded-2xl p-3">
+        {/* Category Pills */}
+        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 md:pb-0 scrollbar-none">
+          {categoryTabs.map((tab) => (
+            <button
+              key={tab}
+              type="button"
+              onClick={() => setActiveCategory(tab)}
+              className={`py-1.5 px-3 rounded-lg text-xs font-medium whitespace-nowrap transition-all cursor-pointer ${
+                activeCategory === tab
+                  ? "bg-[#262626] text-[#D4AF37] font-semibold border border-[#D4AF37]/40"
+                  : "text-neutral-400 hover:text-white hover:bg-[#202020]"
+              }`}
+            >
+              {tab}
+            </button>
+          ))}
+        </div>
+
+        {/* Search Input */}
+        <div className="relative min-w-[220px]">
+          <MagnifyingGlassIcon className="w-4 h-4 text-neutral-500 absolute left-3 top-1/2 -translate-y-1/2" />
+          <input
+            type="text"
+            placeholder="Rechercher une prestation..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full pl-9 pr-3 py-1.5 bg-[#0C0C0C] border border-[#262626] rounded-xl text-xs text-white placeholder-neutral-500 focus:outline-none focus:border-[#D4AF37] transition-colors"
+          />
+        </div>
+      </div>
+
+      {/* Catalog Table Card */}
+      <div className="bg-[#171717] border border-[#262626] rounded-2xl overflow-hidden">
+        {filteredItems.length === 0 ? (
+          <div className="p-12 text-center">
+            <TagIcon className="w-10 h-10 text-neutral-500 mx-auto mb-3" />
+            <p className="text-base text-white font-medium">Aucun modèle trouvé</p>
+            <p className="text-xs text-neutral-400 mt-1 mb-4">
+              {searchQuery
+                ? `Aucun résultat pour "${searchQuery}" dans cette catégorie.`
+                : "Créez vos prestations fréquentes pour facturer en quelques secondes."}
             </p>
             <button
               type="button"
               onClick={handleOpenAdd}
-              style={{
-                background: "#D4AF37",
-                color: "#0C0C0C",
-                border: "none",
-                borderRadius: "10px",
-                padding: "8px 16px",
-                fontSize: "13px",
-                fontWeight: 600,
-                cursor: "pointer",
-              }}
+              className="py-2 px-4 rounded-xl bg-[#D4AF37] text-[#0C0C0C] text-xs font-semibold cursor-pointer"
             >
-              + Ajouter mon premier article
+              + Ajouter cet article
             </button>
           </div>
         ) : (
-          <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left" }}>
-            <thead>
-              <tr style={{ borderBottom: "1px solid #262626" }}>
-                <th style={{ padding: "16px 20px", fontSize: "12px", color: "#A1A1AA", fontWeight: 500 }}>
-                  ARTICLE / PRESTATION
-                </th>
-                <th style={{ padding: "16px 20px", fontSize: "12px", color: "#A1A1AA", fontWeight: 500, textAlign: "right" }}>
-                  PRIX UNITAIRE
-                </th>
-                <th style={{ padding: "16px 20px", fontSize: "12px", color: "#A1A1AA", fontWeight: 500, textAlign: "right" }}>
-                  ACTIONS
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {items.map((item) => (
-                <tr key={item.id} style={{ borderBottom: "1px solid #222" }}>
-                  <td style={{ padding: "16px 20px" }}>
-                    <p style={{ fontFamily: "'DM Sans', sans-serif", fontSize: "14px", color: "#F4F4F5", margin: 0, fontWeight: 500 }}>
-                      {item.label}
-                    </p>
-                    {item.description && (
-                      <p style={{ fontFamily: "'DM Sans', sans-serif", fontSize: "12px", color: "#A1A1AA", margin: "2px 0 0" }}>
-                        {item.description}
-                      </p>
-                    )}
-                  </td>
-
-                  <td
-                    style={{
-                      padding: "16px 20px",
-                      textAlign: "right",
-                      fontFamily: "'DM Sans', sans-serif",
-                      fontSize: "15px",
-                      fontWeight: 600,
-                      color: "#D4AF37",
-                      fontVariantNumeric: "tabular-nums",
-                    }}
-                  >
-                    {item.price.toLocaleString("fr-FR")} FCFA
-                  </td>
-
-                  <td style={{ padding: "16px 20px", textAlign: "right" }}>
-                    <div className="flex items-center justify-end gap-2">
-                      <button
-                        type="button"
-                        onClick={() => handleOpenEdit(item)}
-                        style={{
-                          background: "transparent",
-                          border: "1px solid #262626",
-                          borderRadius: "8px",
-                          padding: "6px 8px",
-                          color: "#A1A1AA",
-                          cursor: "pointer",
-                        }}
-                        title="Modifier l'article"
-                      >
-                        <PencilSquareIcon style={{ width: 16, height: 16 }} />
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => setDeleteItem(item)}
-                        style={{
-                          background: "transparent",
-                          border: "1px solid #262626",
-                          borderRadius: "8px",
-                          padding: "6px 8px",
-                          color: "#E08585",
-                          cursor: "pointer",
-                        }}
-                        title="Supprimer l'article"
-                      >
-                        <TrashIcon style={{ width: 16, height: 16 }} />
-                      </button>
-                    </div>
-                  </td>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="border-b border-[#262626] text-[11px] font-mono uppercase text-neutral-400">
+                  <th className="py-3 px-4 font-medium">PRESTATION / ARTICLE</th>
+                  <th className="py-3 px-4 font-medium">CORPS DE MÉTIER</th>
+                  <th className="py-3 px-4 font-medium text-right">PRIX UNITAIRE</th>
+                  <th className="py-3 px-4 font-medium text-right">ACTIONS</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-[#222]">
+                {filteredItems.map((item) => (
+                  <tr key={item.id} className="hover:bg-[#1c1c1c] transition-colors">
+                    {/* Item label & description */}
+                    <td className="py-3.5 px-4">
+                      <p className="text-sm font-medium text-white">{item.label}</p>
+                      {item.description && (
+                        <p className="text-xs text-neutral-400 mt-0.5 max-w-md line-clamp-1">
+                          {item.description}
+                        </p>
+                      )}
+                    </td>
+
+                    {/* Category badge */}
+                    <td className="py-3.5 px-4">
+                      <span className="inline-block py-0.5 px-2 rounded-md bg-[#262626] border border-[#333] text-[11px] text-neutral-300">
+                        {item.category}
+                      </span>
+                    </td>
+
+                    {/* Price in FCFA */}
+                    <td className="py-3.5 px-4 text-right">
+                      <span className="text-sm font-semibold text-[#D4AF37] font-mono tabular-nums">
+                        {item.price.toLocaleString("fr-FR")} FCFA
+                      </span>
+                    </td>
+
+                    {/* Actions */}
+                    <td className="py-3.5 px-4 text-right">
+                      <div className="flex items-center justify-end gap-1.5">
+                        {onSelectItemForInvoice && (
+                          <button
+                            type="button"
+                            onClick={() => onSelectItemForInvoice(item)}
+                            className="flex items-center gap-1 py-1 px-2 rounded-lg bg-[#262626] hover:bg-[#303030] text-[#D4AF37] text-xs font-medium transition-colors cursor-pointer"
+                            title="Créer une facture avec cet article"
+                          >
+                            <DocumentPlusIcon className="w-3.5 h-3.5" />
+                            <span className="hidden sm:inline">Facturer</span>
+                          </button>
+                        )}
+
+                        <button
+                          type="button"
+                          onClick={() => handleOpenEdit(item)}
+                          className="p-1.5 rounded-lg border border-[#262626] hover:border-[#404040] text-neutral-400 hover:text-white transition-colors cursor-pointer"
+                          title="Modifier l'article"
+                        >
+                          <PencilSquareIcon className="w-4 h-4" />
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => setDeleteItem(item)}
+                          className="p-1.5 rounded-lg border border-[#262626] hover:border-red-900/60 text-neutral-500 hover:text-red-400 transition-colors cursor-pointer"
+                          title="Supprimer l'article"
+                        >
+                          <TrashIcon className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
 
-      {/* Add / Edit Dialog */}
+      {/* Add / Edit Modal Dialog */}
       {(isAddOpen || editItem) && (
-        <div
-          style={{
-            position: "fixed",
-            inset: 0,
-            zIndex: 1000,
-            background: "rgba(0,0,0,0.8)",
-            backdropFilter: "blur(4px)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            padding: "16px",
-          }}
-        >
-          <div
-            style={{
-              width: "100%",
-              maxWidth: "440px",
-              background: "#171717",
-              border: "1px solid #262626",
-              borderRadius: "18px",
-              padding: "24px",
-            }}
-          >
-            <div className="flex items-center justify-between mb-4">
-              <h3 style={{ fontFamily: "'DM Serif Display', serif", fontSize: "20px", color: "#F4F4F5", margin: 0 }}>
-                {editItem ? "Modifier l'article" : "Ajouter un modèle de prix"}
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="w-full max-w-md bg-[#171717] border border-[#262626] rounded-2xl p-6 space-y-4 shadow-none">
+            <div className="flex items-center justify-between border-b border-[#262626] pb-3">
+              <h3
+                style={{ fontFamily: "'DM Serif Display', serif" }}
+                className="text-lg text-white"
+              >
+                {editItem ? "Modifier la prestation" : "Nouveau modèle de prix"}
               </h3>
               <button
                 type="button"
@@ -271,117 +379,86 @@ export default function CatalogView() {
                   setIsAddOpen(false);
                   setEditItem(null);
                 }}
-                style={{ background: "none", border: "none", color: "#A1A1AA", cursor: "pointer" }}
+                className="p-1 text-neutral-400 hover:text-white"
               >
-                <XMarkIcon style={{ width: 20, height: 20 }} />
+                <XMarkIcon className="w-5 h-5" />
               </button>
             </div>
 
-            <div className="flex flex-col gap-4 mb-6">
+            <div className="space-y-3.5">
               <div>
-                <label style={{ display: "block", fontSize: "12px", color: "#A1A1AA", marginBottom: "6px" }}>
+                <label className="block text-xs font-medium text-neutral-300 mb-1">
+                  Corps de métier *
+                </label>
+                <select
+                  value={category}
+                  onChange={(e) => setCategory(e.target.value as any)}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#0C0C0C] border border-[#262626] text-sm text-white focus:outline-none focus:border-[#D4AF37] transition-colors"
+                >
+                  <option value="Menuiserie & Bois">Menuiserie & Bois</option>
+                  <option value="Couture & Mode">Couture & Mode</option>
+                  <option value="BTP & Électricité">BTP & Électricité</option>
+                  <option value="Mécanique & Auto">Mécanique & Auto</option>
+                  <option value="Services & Divers">Services & Divers</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-neutral-300 mb-1">
                   Libellé de la prestation *
                 </label>
                 <input
                   type="text"
-                  placeholder="Ex: Révision complète 50 000 km"
+                  placeholder="Ex: Confection costume 3 pièces Bazin"
                   value={label}
                   onChange={(e) => setLabel(e.target.value)}
-                  style={{
-                    width: "100%",
-                    height: "44px",
-                    background: "#0C0C0C",
-                    border: "1px solid #262626",
-                    borderRadius: "10px",
-                    padding: "0 14px",
-                    color: "#F4F4F5",
-                    fontSize: "14px",
-                    outline: "none",
-                  }}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#0C0C0C] border border-[#262626] text-sm text-white placeholder-neutral-500 focus:outline-none focus:border-[#D4AF37] transition-colors"
                 />
               </div>
 
               <div>
-                <label style={{ display: "block", fontSize: "12px", color: "#A1A1AA", marginBottom: "6px" }}>
+                <label className="block text-xs font-medium text-neutral-300 mb-1">
                   Description complémentaire (facultatif)
                 </label>
                 <input
                   type="text"
-                  placeholder="Détails des pièces incluses..."
+                  placeholder="Détails des matériaux ou prestations incluses..."
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  style={{
-                    width: "100%",
-                    height: "44px",
-                    background: "#0C0C0C",
-                    border: "1px solid #262626",
-                    borderRadius: "10px",
-                    padding: "0 14px",
-                    color: "#F4F4F5",
-                    fontSize: "14px",
-                    outline: "none",
-                  }}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#0C0C0C] border border-[#262626] text-sm text-white placeholder-neutral-500 focus:outline-none focus:border-[#D4AF37] transition-colors"
                 />
               </div>
 
               <div>
-                <label style={{ display: "block", fontSize: "12px", color: "#A1A1AA", marginBottom: "6px" }}>
+                <label className="block text-xs font-medium text-neutral-300 mb-1">
                   Prix unitaire (FCFA) *
                 </label>
                 <input
                   type="number"
+                  min={0}
+                  step={500}
                   value={price}
-                  onChange={(e) => setPrice(Number(e.target.value))}
-                  style={{
-                    width: "100%",
-                    height: "44px",
-                    background: "#0C0C0C",
-                    border: "1px solid #262626",
-                    borderRadius: "10px",
-                    padding: "0 14px",
-                    color: "#F4F4F5",
-                    fontSize: "15px",
-                    fontWeight: 500,
-                    outline: "none",
-                  }}
+                  onChange={(e) => setPrice(Number(e.target.value) || 0)}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#0C0C0C] border border-[#262626] text-sm text-white font-mono focus:outline-none focus:border-[#D4AF37] transition-colors"
                 />
               </div>
             </div>
 
-            <div className="flex gap-3">
+            <div className="flex gap-3 pt-2 border-t border-[#262626]">
               <button
                 type="button"
                 onClick={() => {
                   setIsAddOpen(false);
                   setEditItem(null);
                 }}
-                style={{
-                  flex: 1,
-                  height: "44px",
-                  background: "transparent",
-                  border: "1px solid #262626",
-                  borderRadius: "10px",
-                  color: "#F4F4F5",
-                  fontSize: "14px",
-                  cursor: "pointer",
-                }}
+                className="flex-1 py-2.5 rounded-xl border border-[#262626] text-xs text-neutral-300 hover:text-white font-medium"
               >
                 Annuler
               </button>
               <button
                 type="button"
                 onClick={handleSaveItem}
-                style={{
-                  flex: 1,
-                  height: "44px",
-                  background: "#D4AF37",
-                  border: "none",
-                  borderRadius: "10px",
-                  color: "#0C0C0C",
-                  fontSize: "14px",
-                  fontWeight: 600,
-                  cursor: "pointer",
-                }}
+                className="flex-1 py-2.5 rounded-xl bg-[#D4AF37] text-[#0C0C0C] text-xs font-semibold hover:bg-[#e2b170] transition-colors"
               >
                 Enregistrer
               </button>
@@ -390,69 +467,32 @@ export default function CatalogView() {
         </div>
       )}
 
-      {/* Delete Confirmation Dialog */}
+      {/* Delete Confirmation Modal */}
       {deleteItem && (
-        <div
-          style={{
-            position: "fixed",
-            inset: 0,
-            zIndex: 1000,
-            background: "rgba(0,0,0,0.8)",
-            backdropFilter: "blur(4px)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            padding: "16px",
-          }}
-        >
-          <div
-            style={{
-              width: "100%",
-              maxWidth: "400px",
-              background: "#171717",
-              border: "1px solid #262626",
-              borderRadius: "18px",
-              padding: "24px",
-            }}
-          >
-            <h3 style={{ fontFamily: "'DM Serif Display', serif", fontSize: "19px", color: "#F4F4F5", margin: "0 0 10px" }}>
-              Supprimer cet article ?
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="w-full max-w-sm bg-[#171717] border border-[#262626] rounded-2xl p-6 space-y-3">
+            <h3
+              style={{ fontFamily: "'DM Serif Display', serif" }}
+              className="text-lg text-white"
+            >
+              Supprimer cette prestation ?
             </h3>
-            <p style={{ fontSize: "13.5px", color: "#A1A1AA", margin: "0 0 20px", lineHeight: 1.5 }}>
-              Êtes-vous sûr de vouloir supprimer <strong className="text-[#F4F4F5]">{deleteItem.label}</strong> ? Cette action est irréversible.
+            <p className="text-xs text-neutral-400 leading-relaxed">
+              Voulez-vous supprimer <strong className="text-white">{deleteItem.label}</strong> du catalogue ? Cette action est irréversible.
             </p>
 
-            <div className="flex gap-3">
+            <div className="flex gap-3 pt-3">
               <button
                 type="button"
                 onClick={() => setDeleteItem(null)}
-                style={{
-                  flex: 1,
-                  height: "42px",
-                  background: "transparent",
-                  border: "1px solid #262626",
-                  borderRadius: "10px",
-                  color: "#F4F4F5",
-                  fontSize: "13.5px",
-                  cursor: "pointer",
-                }}
+                className="flex-1 py-2.5 rounded-xl border border-[#262626] text-xs text-neutral-300 hover:text-white"
               >
                 Annuler
               </button>
               <button
                 type="button"
                 onClick={handleConfirmDelete}
-                style={{
-                  flex: 1,
-                  height: "42px",
-                  background: "#E08585",
-                  border: "none",
-                  borderRadius: "10px",
-                  color: "#0C0C0C",
-                  fontSize: "13.5px",
-                  fontWeight: 600,
-                  cursor: "pointer",
-                }}
+                className="flex-1 py-2.5 rounded-xl bg-red-500/80 hover:bg-red-500 text-white text-xs font-semibold transition-colors"
               >
                 Supprimer
               </button>

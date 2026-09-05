@@ -6,9 +6,9 @@ import { SidebarProvider, useSidebar } from "@/components/dashboard/sidebar-cont
 import DashboardSidebar, { DashboardView } from "@/components/dashboard/sidebar";
 import DashboardHeader from "@/components/dashboard/header";
 import SalesRegistry, { DocumentItem } from "@/components/dashboard/sales-registry";
-import DocumentEditor from "@/components/dashboard/document-editor";
+import DocumentEditor, { LineItem } from "@/components/dashboard/document-editor";
 import SettingsStamp from "@/components/dashboard/settings-stamp";
-import CatalogView from "@/components/dashboard/catalog-view";
+import CatalogView, { CatalogItem } from "@/components/dashboard/catalog-view";
 
 function DashboardMainContent() {
   const { isCollapsed } = useSidebar();
@@ -19,6 +19,7 @@ function DashboardMainContent() {
 
   const [prefilledClient, setPrefilledClient] = useState("");
   const [prefilledType, setPrefilledType] = useState<"devis" | "facture" | "recu">("facture");
+  const [prefilledItems, setPrefilledItems] = useState<LineItem[] | undefined>(undefined);
 
   const viewTitles: Record<DashboardView, string> = {
     registry: "Tableau de bord — Registre des ventes",
@@ -30,6 +31,21 @@ function DashboardMainContent() {
   const handleDuplicate = (doc: DocumentItem) => {
     setPrefilledClient(doc.client);
     setPrefilledType(doc.type);
+    setPrefilledItems(undefined);
+    setCurrentView("new");
+  };
+
+  const handleInvoiceFromCatalog = (item: CatalogItem) => {
+    setPrefilledItems([
+      {
+        id: Date.now().toString(),
+        label: item.label,
+        qty: 1,
+        price: item.price,
+      },
+    ]);
+    setPrefilledClient("");
+    setPrefilledType("facture");
     setCurrentView("new");
   };
 
@@ -83,14 +99,18 @@ function DashboardMainContent() {
                 <DocumentEditor
                   initialType={prefilledType}
                   initialClient={prefilledClient}
+                  initialItems={prefilledItems}
                   onSuccess={() => {
                     setDocumentCount((prev) => Math.min(prev + 1, maxDocuments));
+                    setPrefilledItems(undefined);
                     setCurrentView("registry");
                   }}
                 />
               )}
 
-              {currentView === "catalog" && <CatalogView />}
+              {currentView === "catalog" && (
+                <CatalogView onSelectItemForInvoice={handleInvoiceFromCatalog} />
+              )}
 
               {currentView === "settings" && <SettingsStamp />}
             </motion.div>
